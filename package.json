@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "sonar": "docker run --rm --network=host -v \"$(pwd):/usr/src\" sonarsource/sonar-scanner-cli -Dsonar.qualitygate.wait=true",
+    "sonar": "docker run --rm --network=host -e SONAR_TOKEN -v \"$(pwd):/usr/src\" sonarsource/sonar-scanner-cli -Dsonar.qualitygate.wait=true",
     "prepare": "husky"
   },
   "dependencies": {

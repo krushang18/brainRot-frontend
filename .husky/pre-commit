@@ -1,7 +1,9 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
 echo "🚀 Running pre-commit checks..."
+
+# Load environment variables from .env if it exists
+if [ -f .env ]; then
+  export $(grep -v '^#' .env | xargs)
+fi
 
 # 1. Lint & Format staged files
 echo "🔍 Linting and formatting..."
