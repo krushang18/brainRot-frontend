@@ -3,19 +3,16 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
-export default function SignupForm() {
+export default function LoginForm() {
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
-    confirmPassword: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (
@@ -26,11 +23,6 @@ export default function SignupForm() {
     }
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     setErrors(newErrors);
@@ -54,11 +46,11 @@ export default function SignupForm() {
     // Simulate API call
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log('Signup data:', formData);
-      // Handle successful signup here (e.g., redirect or show success message)
+      console.log('Login data:', formData);
+      // Handle successful login here (e.g., redirect or update auth state)
     } catch (err) {
-      console.error('Signup error:', err);
-      setErrors({ form: 'Something went wrong. Please try again.' });
+      console.error('Login error:', err);
+      setErrors({ form: 'Invalid email or password. Please try again.' });
     } finally {
       setIsLoading(false);
     }
@@ -68,8 +60,8 @@ export default function SignupForm() {
     <div className="text-gunmetal w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
       <div className="p-8">
         <div className="mb-8 text-center">
-          <h2 className="text-granite mb-2 text-3xl font-bold">Create an account</h2>
-          <p className="text-ash-grey font-medium">Join us today! It only takes a minute.</p>
+          <h2 className="text-granite mb-2 text-3xl font-bold">Welcome Back</h2>
+          <p className="text-ash-grey font-medium">Log in to your BrainRot account</p>
         </div>
 
         {errors.form && (
@@ -78,27 +70,7 @@ export default function SignupForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="mb-1 block text-sm font-semibold" htmlFor="name">
-              Full Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className={`w-full rounded-lg border px-4 py-3 transition-colors focus:ring-2 focus:outline-none ${
-                errors.name
-                  ? 'border-red-500 bg-red-50 focus:ring-red-200'
-                  : 'border-dust-grey focus:border-granite focus:ring-ash-grey/30 bg-alabaster-grey/50'
-              }`}
-              placeholder="John Doe"
-            />
-            {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
-          </div>
-
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <div>
             <label className="mb-1 block text-sm font-semibold" htmlFor="email">
               Email Address
@@ -120,9 +92,17 @@ export default function SignupForm() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-semibold" htmlFor="password">
-              Password
-            </label>
+            <div className="mb-1 flex items-center justify-between">
+              <label className="text-sm font-semibold" htmlFor="password">
+                Password
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-granite text-xs font-semibold hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
             <input
               type="password"
               id="password"
@@ -137,28 +117,6 @@ export default function SignupForm() {
               placeholder="••••••••"
             />
             {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-semibold" htmlFor="confirmPassword">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`w-full rounded-lg border px-4 py-3 transition-colors focus:ring-2 focus:outline-none ${
-                errors.confirmPassword
-                  ? 'border-red-500 bg-red-50 focus:ring-red-200'
-                  : 'border-dust-grey focus:border-granite focus:ring-ash-grey/30 bg-alabaster-grey/50'
-              }`}
-              placeholder="••••••••"
-            />
-            {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
-            )}
           </div>
 
           <button
@@ -189,7 +147,7 @@ export default function SignupForm() {
                 ></path>
               </svg>
             ) : (
-              'Create Account'
+              'Log In'
             )}
           </button>
         </form>
@@ -243,12 +201,12 @@ export default function SignupForm() {
       </div>
       <div className="bg-alabaster-grey/30 border-dust-grey/30 border-t py-4 text-center">
         <p className="text-sm">
-          Already have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link
-            href="/login"
+            href="/signup"
             className="text-granite font-semibold transition-colors hover:text-[#34412f]"
           >
-            Log in
+            Sign up
           </Link>
         </p>
       </div>
