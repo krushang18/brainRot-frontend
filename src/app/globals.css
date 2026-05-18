@@ -1,13 +1,23 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --alabaster-grey: #e6e8e6;
+  --dust-grey: #ced0ce;
+  --ash-grey: #9fb8ad;
+  --granite: #475841;
+  --gunmetal: #3f403f;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-alabaster-grey: var(--alabaster-grey);
+  --color-dust-grey: var(--dust-grey);
+  --color-ash-grey: var(--ash-grey);
+  --color-granite: var(--granite);
+  --color-gunmetal: var(--gunmetal);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
