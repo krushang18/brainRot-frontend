@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "sonar": "docker run --rm --network=host -e SONAR_TOKEN -v \"$(pwd):/usr/src\" sonarsource/sonar-scanner-cli -Dsonar.qualitygate.wait=true -Dsonar.projectKey=\"brainrot-frontend-$(git branch --show-current | tr '/' '-')\" -Dsonar.projectName=\"BrainRot Frontend ($(git branch --show-current))\"",
     "prepare": "husky"
   },
@@ -25,6 +26,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^4.1.6",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
