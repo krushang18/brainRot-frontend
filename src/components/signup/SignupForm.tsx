@@ -3,7 +3,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
-export default function SignupForm() {
+interface SignupFormProps {
+  onToggle?: () => void;
+}
+
+export default function SignupForm({ onToggle }: SignupFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -244,12 +248,22 @@ export default function SignupForm() {
       <div className="bg-alabaster-grey/30 border-dust-grey/30 border-t py-4 text-center">
         <p className="text-sm">
           Already have an account?{' '}
-          <Link
-            href="/login"
-            className="text-granite font-semibold transition-colors hover:text-[#34412f]"
-          >
-            Log in
-          </Link>
+          {onToggle ? (
+            <button
+              type="button"
+              onClick={onToggle}
+              className="text-granite cursor-pointer font-semibold transition-colors hover:text-[#34412f]"
+            >
+              Log in
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="text-granite font-semibold transition-colors hover:text-[#34412f]"
+            >
+              Log in
+            </Link>
+          )}
         </p>
       </div>
     </div>
