@@ -1,73 +1,53 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import SocialAuthButtons from '../auth/SocialAuthButtons';
+import { useAuthForm } from '@/hooks/useAuthForm';
 
 interface SignupFormProps {
   onToggle?: () => void;
 }
 
-export default function SignupForm({ onToggle }: SignupFormProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
+const initialState = {
+  name: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+};
 
-  const validateForm = () => {
+export default function SignupForm({ onToggle }: SignupFormProps) {
+  const validate = (values: typeof initialState) => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) {
+    if (!values.name.trim()) newErrors.name = 'Name is required';
+    if (!values.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (
-      formData.email.length > 254 ||
-      !/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(formData.email)
+      values.email.length > 254 ||
+      !/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(values.email)
     ) {
       newErrors.email = 'Invalid email format';
     }
-    if (!formData.password) {
+    if (!values.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
+    } else if (values.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-    if (formData.password !== formData.confirmPassword) {
+    if (values.password !== values.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when typing
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-    // Simulate API call
-    try {
+  const { formData, errors, isLoading, handleChange, handleSubmit } = useAuthForm({
+    initialState,
+    validate,
+    onSubmit: async (values) => {
+      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log('Signup data:', formData);
-      // Handle successful signup here (e.g., redirect or show success message)
-    } catch (err) {
-      console.error('Signup error:', err);
-      setErrors({ form: 'Something went wrong. Please try again.' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      console.log('Signup data:', values);
+    },
+  });
 
   return (
     <div className="text-gunmetal w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">

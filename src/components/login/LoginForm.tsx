@@ -1,65 +1,45 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import SocialAuthButtons from '../auth/SocialAuthButtons';
+import { useAuthForm } from '@/hooks/useAuthForm';
 
 interface LoginFormProps {
   onToggle?: () => void;
 }
 
-export default function LoginForm({ onToggle }: LoginFormProps) {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
+const initialState = {
+  email: '',
+  password: '',
+};
 
-  const validateForm = () => {
+export default function LoginForm({ onToggle }: LoginFormProps) {
+  const validate = (values: typeof initialState) => {
     const newErrors: Record<string, string> = {};
-    if (!formData.email.trim()) {
+    if (!values.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (
-      formData.email.length > 254 ||
-      !/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(formData.email)
+      values.email.length > 254 ||
+      !/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(values.email)
     ) {
       newErrors.email = 'Invalid email format';
     }
-    if (!formData.password) {
+    if (!values.password) {
       newErrors.password = 'Password is required';
     }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when typing
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-    // Simulate API call
-    try {
+  const { formData, errors, isLoading, handleChange, handleSubmit } = useAuthForm({
+    initialState,
+    validate,
+    onSubmit: async (values) => {
+      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log('Login data:', formData);
-      // Handle successful login here (e.g., redirect or update auth state)
-    } catch (err) {
-      console.error('Login error:', err);
-      setErrors({ form: 'Invalid email or password. Please try again.' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      console.log('Login data:', values);
+    },
+  });
 
   return (
     <div className="text-gunmetal w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
