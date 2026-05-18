@@ -14,7 +14,7 @@ const initialState = {
   password: '',
 };
 
-export default function LoginForm({ onToggle }: LoginFormProps) {
+export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
   const validate = (values: typeof initialState) => {
     const newErrors: Record<string, string> = {};
     if (!values.email.trim()) {

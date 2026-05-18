@@ -16,7 +16,7 @@ const initialState = {
   confirmPassword: '',
 };
 
-export default function SignupForm({ onToggle }: SignupFormProps) {
+export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
   const validate = (values: typeof initialState) => {
     const newErrors: Record<string, string> = {};
     if (!values.name.trim()) newErrors.name = 'Name is required';
