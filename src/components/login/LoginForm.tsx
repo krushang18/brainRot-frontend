@@ -63,6 +63,23 @@ export default function LoginForm({ onToggle }: LoginFormProps) {
   return (
     <div className="text-gunmetal w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
       <div className="p-8">
+        {/* Sliding Tabs Switcher */}
+        <div className="bg-alabaster-grey border-dust-grey/30 mb-8 flex rounded-xl border p-1">
+          <button
+            type="button"
+            className="text-granite flex-1 rounded-lg bg-white py-2.5 text-center text-sm font-semibold shadow-sm transition-all"
+          >
+            Log In
+          </button>
+          <button
+            type="button"
+            onClick={onToggle}
+            className="text-ash-grey hover:text-gunmetal flex-1 cursor-pointer rounded-lg py-2.5 text-center text-sm font-semibold transition-all"
+          >
+            Sign Up
+          </button>
+        </div>
+
         <div className="mb-8 text-center">
           <h2 className="text-granite mb-2 text-3xl font-bold">Welcome Back</h2>
           <p className="text-ash-grey font-medium">Log in to your BrainRot account</p>

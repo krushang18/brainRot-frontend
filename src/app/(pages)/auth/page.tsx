@@ -1,24 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 import LoginForm from '@/components/login/LoginForm';
 import SignupForm from '@/components/signup/SignupForm';
 
-function AuthContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  // Initialize state once on mount from URL query param
-  const [isLogin, setIsLogin] = useState(() => {
-    return searchParams.get('mode') !== 'signup';
-  });
+export default function AuthPage() {
+  const [isLogin, setIsLogin] = useState(true);
 
   const handleToggle = () => {
-    const newIsLogin = !isLogin;
-    setIsLogin(newIsLogin);
-    // Dynamically update URL without reloading
-    router.replace(`/auth?mode=${newIsLogin ? 'login' : 'signup'}`);
+    setIsLogin((prev) => !prev);
   };
 
   return (
@@ -35,19 +25,5 @@ function AuthContent() {
         </div>
       </main>
     </div>
-  );
-}
-
-export default function AuthPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="bg-alabaster-grey flex min-h-screen items-center justify-center p-4">
-          <div className="border-granite h-10 w-10 animate-spin rounded-full border-4 border-t-transparent"></div>
-        </div>
-      }
-    >
-      <AuthContent />
-    </Suspense>
   );
 }

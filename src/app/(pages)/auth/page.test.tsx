@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import AuthPage from './page';
 
 // MockLoginForm and MockSignupForm to isolate tests
@@ -26,26 +26,8 @@ vi.mock('@/components/signup/SignupForm', () => ({
   ),
 }));
 
-// Mock useSearchParams and useRouter
-const mockReplace = vi.fn();
-const mockGet = vi.fn();
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    replace: mockReplace,
-  }),
-  useSearchParams: () => ({
-    get: mockGet,
-  }),
-}));
-
 describe('AuthPage', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('renders correctly and defaults to Login page', () => {
-    mockGet.mockReturnValue(null);
     render(<AuthPage />);
 
     expect(screen.getByText('BrainRot')).toBeInTheDocument();
@@ -53,30 +35,24 @@ describe('AuthPage', () => {
     expect(screen.queryByTestId('mock-signup-form')).not.toBeInTheDocument();
   });
 
-  it('toggles successfully to Signup and updates URL parameter', () => {
-    mockGet.mockReturnValue(null);
+  it('toggles successfully to Signup', () => {
     render(<AuthPage />);
 
     fireEvent.click(screen.getByTestId('to-signup'));
 
     expect(screen.getByTestId('mock-signup-form')).toBeInTheDocument();
     expect(screen.queryByTestId('mock-login-form')).not.toBeInTheDocument();
-    expect(mockReplace).toHaveBeenCalledWith('/auth?mode=signup');
   });
 
-  it('initializes on Signup if query param mode is signup', () => {
-    mockGet.mockReturnValue('signup');
+  it('toggles back to Login', () => {
     render(<AuthPage />);
 
+    // Toggle to signup
+    fireEvent.click(screen.getByTestId('to-signup'));
     expect(screen.getByTestId('mock-signup-form')).toBeInTheDocument();
-    expect(screen.queryByTestId('mock-login-form')).not.toBeInTheDocument();
-  });
 
-  it('initializes on Login if query param mode is login', () => {
-    mockGet.mockReturnValue('login');
-    render(<AuthPage />);
-
+    // Toggle back to login
+    fireEvent.click(screen.getByTestId('to-login'));
     expect(screen.getByTestId('mock-login-form')).toBeInTheDocument();
-    expect(screen.queryByTestId('mock-signup-form')).not.toBeInTheDocument();
   });
 });
