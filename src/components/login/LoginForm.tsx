@@ -15,7 +15,10 @@ export default function LoginForm() {
     const newErrors: Record<string, string> = {};
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (
+      formData.email.length > 254 ||
+      !/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(formData.email)
+    ) {
       newErrors.email = 'Invalid email format';
     }
     if (!formData.password) {

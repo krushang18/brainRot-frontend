@@ -18,7 +18,10 @@ export default function SignupForm() {
     if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (
+      formData.email.length > 254 ||
+      !/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(formData.email)
+    ) {
       newErrors.email = 'Invalid email format';
     }
     if (!formData.password) {
