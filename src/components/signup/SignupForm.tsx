@@ -43,7 +43,7 @@ export default function SignupForm() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
 
@@ -54,6 +54,7 @@ export default function SignupForm() {
       console.log('Signup data:', formData);
       // Handle successful signup here (e.g., redirect or show success message)
     } catch (err) {
+      console.error('Signup error:', err);
       setErrors({ form: 'Something went wrong. Please try again.' });
     } finally {
       setIsLoading(false);

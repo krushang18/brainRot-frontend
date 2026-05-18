@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "sonar": "docker run --rm --network=host -e SONAR_TOKEN -v \"$(pwd):/usr/src\" sonarsource/sonar-scanner-cli -Dsonar.qualitygate.wait=true",
+    "sonar": "docker run --rm --network=host -e SONAR_TOKEN -v \"$(pwd):/usr/src\" sonarsource/sonar-scanner-cli -Dsonar.qualitygate.wait=true -Dsonar.projectKey=\"brainrot-frontend-$(git branch --show-current | tr '/' '-')\" -Dsonar.projectName=\"BrainRot Frontend ($(git branch --show-current))\"",
     "prepare": "husky"
   },
   "dependencies": {
