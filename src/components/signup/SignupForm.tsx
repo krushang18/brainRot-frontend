@@ -160,6 +160,7 @@ export default function SignupForm() {
 
           <button
             type="submit"
+            data-testid="submit-button"
             disabled={isLoading}
             className="bg-granite flex w-full items-center justify-center rounded-lg px-4 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#34412f] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
           >
