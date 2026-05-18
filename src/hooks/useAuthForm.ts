@@ -19,7 +19,7 @@ export function useAuthForm<T>({ initialState, validate, onSubmit }: UseAuthForm
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const validationErrors = validate(formData);
     setErrors(validationErrors);
