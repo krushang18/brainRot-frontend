@@ -51,20 +51,20 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
   });
 
   return (
-    <Card variant="notebook" className="w-full max-w-md bg-white shadow-xl">
+    <Card variant="notebook" className="w-full max-w-lg bg-white shadow-xl">
       <div className="p-8">
         {/* Sliding Tabs Switcher */}
         <div className="bg-alabaster-grey border-dust-grey/30 mb-8 flex rounded-xl border p-1">
           <button
             type="button"
             onClick={onToggle}
-            className="text-ash-grey hover:text-gunmetal flex-1 cursor-pointer rounded-lg py-2.5 text-center text-sm font-semibold transition-all"
+            className="text-ash-grey hover:text-gunmetal flex-1 cursor-pointer rounded-lg py-2.5 text-center text-base font-semibold transition-all"
           >
             Log In
           </button>
           <button
             type="button"
-            className="text-granite flex-1 rounded-lg bg-white py-2.5 text-center text-sm font-semibold shadow-sm transition-all"
+            className="text-granite flex-1 rounded-lg bg-white py-2.5 text-center text-base font-semibold shadow-sm transition-all"
           >
             Sign Up
           </button>
@@ -76,20 +76,22 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
         </div>
 
         {errors.form && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-center text-sm text-red-600">
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-center text-base text-red-600">
             {errors.form}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <div>
+            <label className="mb-1 ml-1 block text-base font-semibold" htmlFor="name">
+              Full Name
+            </label>
             <Input
               type="text"
               id="name"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              label="Full Name"
               placeholder="John Doe"
               colors={{
                 stroke: errors.name ? '#ef4444' : undefined,
@@ -99,13 +101,15 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
           </div>
 
           <div>
+            <label className="mb-1 ml-1 block text-base font-semibold" htmlFor="email">
+              Email Address
+            </label>
             <Input
               type="email"
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              label="Email Address"
               placeholder="john@example.com"
               colors={{
                 stroke: errors.email ? '#ef4444' : undefined,
@@ -115,13 +119,15 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
           </div>
 
           <div>
+            <label className="mb-1 ml-1 block text-base font-semibold" htmlFor="password">
+              Password
+            </label>
             <Input
               type="password"
               id="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              label="Password"
               placeholder="••••••••"
               colors={{
                 stroke: errors.password ? '#ef4444' : undefined,
@@ -131,13 +137,15 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
           </div>
 
           <div>
+            <label className="mb-1 ml-1 block text-base font-semibold" htmlFor="confirmPassword">
+              Confirm Password
+            </label>
             <Input
               type="password"
               id="confirmPassword"
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              label="Confirm Password"
               placeholder="••••••••"
               colors={{
                 stroke: errors.confirmPassword ? '#ef4444' : undefined,
@@ -150,6 +158,7 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
 
           <Button
             type="submit"
+            data-testid="submit-button"
             disabled={isLoading}
             className="flex w-full items-center justify-center"
           >
@@ -175,14 +184,14 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
                 ></path>
               </svg>
             ) : (
-              'Create Account'
+              'Sign Up'
             )}
           </Button>
         </form>
         <SocialAuthButtons />
       </div>
       <div className="bg-alabaster-grey/30 border-dust-grey/30 border-t py-4 text-center">
-        <p className="text-sm">
+        <p className="text-base">
           Already have an account?{' '}
           {onToggle ? (
             <button

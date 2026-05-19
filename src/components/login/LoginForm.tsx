@@ -43,20 +43,20 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
   });
 
   return (
-    <Card variant="notebook" className="w-full max-w-md bg-white shadow-xl">
+    <Card variant="notebook" className="w-full max-w-lg bg-white shadow-xl">
       <div className="p-8">
         {/* Sliding Tabs Switcher */}
         <div className="bg-alabaster-grey border-dust-grey/30 mb-8 flex rounded-xl border p-1">
           <button
             type="button"
-            className="text-granite flex-1 rounded-lg bg-white py-2.5 text-center text-sm font-semibold shadow-sm transition-all"
+            className="text-granite flex-1 rounded-lg bg-white py-2.5 text-center text-base font-semibold shadow-sm transition-all"
           >
             Log In
           </button>
           <button
             type="button"
             onClick={onToggle}
-            className="text-ash-grey hover:text-gunmetal flex-1 cursor-pointer rounded-lg py-2.5 text-center text-sm font-semibold transition-all"
+            className="text-ash-grey hover:text-gunmetal flex-1 cursor-pointer rounded-lg py-2.5 text-center text-base font-semibold transition-all"
           >
             Sign Up
           </button>
@@ -68,20 +68,22 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
         </div>
 
         {errors.form && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-center text-sm text-red-600">
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-center text-base text-red-600">
             {errors.form}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <div>
+            <label className="mb-1 ml-1 block text-base font-semibold" htmlFor="email">
+              Email Address
+            </label>
             <Input
               type="email"
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              label="Email Address"
               placeholder="john@example.com"
               colors={{
                 stroke: errors.email ? '#ef4444' : undefined,
@@ -91,33 +93,38 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
           </div>
 
           <div>
+            <div className="mb-1 ml-1 flex items-center justify-between">
+              <label className="text-base font-semibold" htmlFor="password">
+                Password
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-granite text-sm font-semibold hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
             <Input
               type="password"
               id="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              label="Password"
               placeholder="••••••••"
               colors={{
                 stroke: errors.password ? '#ef4444' : undefined,
               }}
             />
-            <div className="mt-1 flex items-center justify-between">
-              <div>
-                {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+            {errors.password && (
+              <div className="mt-1">
+                <p className="text-sm text-red-500">{errors.password}</p>
               </div>
-              <Link
-                href="/forgot-password"
-                className="text-granite text-xs font-semibold hover:underline"
-              >
-                Forgot Password?
-              </Link>
-            </div>
+            )}
           </div>
 
           <Button
             type="submit"
+            data-testid="submit-button"
             disabled={isLoading}
             className="flex w-full items-center justify-center"
           >
@@ -151,7 +158,7 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
         <SocialAuthButtons />
       </div>
       <div className="bg-alabaster-grey/30 border-dust-grey/30 border-t py-4 text-center">
-        <p className="text-sm">
+        <p className="text-base">
           Don&apos;t have an account?{' '}
           {onToggle ? (
             <button
