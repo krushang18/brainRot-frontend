@@ -58,21 +58,23 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
           <button
             type="button"
             onClick={onToggle}
-            className="text-ash-grey hover:text-gunmetal flex-1 cursor-pointer rounded-lg py-2.5 text-center text-base font-semibold transition-all"
+            className="text-ash-grey hover:text-gunmetal flex-1 cursor-pointer rounded-lg py-2.5 text-center text-lg font-semibold transition-all"
           >
             Log In
           </button>
           <button
             type="button"
-            className="text-granite flex-1 rounded-lg bg-white py-2.5 text-center text-base font-semibold shadow-sm transition-all"
+            className="text-granite flex-1 rounded-lg bg-white py-2.5 text-center text-lg font-semibold shadow-sm transition-all"
           >
             Sign Up
           </button>
         </div>
 
         <div className="mb-8 text-center">
-          <h2 className="text-granite mb-2 text-3xl font-bold">Create an account</h2>
-          <p className="text-ash-grey font-medium">Join us today! It only takes a minute.</p>
+          <h2 className="text-granite mb-2 text-4xl font-bold">Create an account</h2>
+          <p className="text-ash-grey text-lg font-medium">
+            Join us today! It only takes a minute.
+          </p>
         </div>
 
         {errors.form && (
@@ -83,13 +85,14 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <div>
-            <label className="mb-1 ml-1 block text-base font-semibold" htmlFor="name">
+            <label className="mb-1 ml-1 block text-lg font-semibold" htmlFor="name">
               Full Name
             </label>
             <Input
               type="text"
               id="name"
               name="name"
+              size="lg"
               value={formData.name}
               onChange={handleChange}
               placeholder="John Doe"
@@ -97,17 +100,18 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
                 stroke: errors.name ? '#ef4444' : undefined,
               }}
             />
-            {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
+            {errors.name && <p className="mt-1 text-base text-red-500">{errors.name}</p>}
           </div>
 
           <div>
-            <label className="mb-1 ml-1 block text-base font-semibold" htmlFor="email">
+            <label className="mb-1 ml-1 block text-lg font-semibold" htmlFor="email">
               Email Address
             </label>
             <Input
               type="email"
               id="email"
               name="email"
+              size="lg"
               value={formData.email}
               onChange={handleChange}
               placeholder="john@example.com"
@@ -115,17 +119,18 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
                 stroke: errors.email ? '#ef4444' : undefined,
               }}
             />
-            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+            {errors.email && <p className="mt-1 text-base text-red-500">{errors.email}</p>}
           </div>
 
           <div>
-            <label className="mb-1 ml-1 block text-base font-semibold" htmlFor="password">
+            <label className="mb-1 ml-1 block text-lg font-semibold" htmlFor="password">
               Password
             </label>
             <Input
               type="password"
               id="password"
               name="password"
+              size="lg"
               value={formData.password}
               onChange={handleChange}
               placeholder="••••••••"
@@ -133,17 +138,18 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
                 stroke: errors.password ? '#ef4444' : undefined,
               }}
             />
-            {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+            {errors.password && <p className="mt-1 text-base text-red-500">{errors.password}</p>}
           </div>
 
           <div>
-            <label className="mb-1 ml-1 block text-base font-semibold" htmlFor="confirmPassword">
+            <label className="mb-1 ml-1 block text-lg font-semibold" htmlFor="confirmPassword">
               Confirm Password
             </label>
             <Input
               type="password"
               id="confirmPassword"
               name="confirmPassword"
+              size="lg"
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="••••••••"
@@ -152,7 +158,7 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
               }}
             />
             {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
+              <p className="mt-1 text-base text-red-500">{errors.confirmPassword}</p>
             )}
           </div>
 
@@ -191,7 +197,7 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
         <SocialAuthButtons />
       </div>
       <div className="bg-alabaster-grey/30 border-dust-grey/30 border-t py-4 text-center">
-        <p className="text-base">
+        <p className="text-lg">
           Already have an account?{' '}
           {onToggle ? (
             <button

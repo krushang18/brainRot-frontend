@@ -49,22 +49,22 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
         <div className="bg-alabaster-grey border-dust-grey/30 mb-8 flex rounded-xl border p-1">
           <button
             type="button"
-            className="text-granite flex-1 rounded-lg bg-white py-2.5 text-center text-base font-semibold shadow-sm transition-all"
+            className="text-granite flex-1 rounded-lg bg-white py-2.5 text-center text-lg font-semibold shadow-sm transition-all"
           >
             Log In
           </button>
           <button
             type="button"
             onClick={onToggle}
-            className="text-ash-grey hover:text-gunmetal flex-1 cursor-pointer rounded-lg py-2.5 text-center text-base font-semibold transition-all"
+            className="text-ash-grey hover:text-gunmetal flex-1 cursor-pointer rounded-lg py-2.5 text-center text-lg font-semibold transition-all"
           >
             Sign Up
           </button>
         </div>
 
         <div className="mb-8 text-center">
-          <h2 className="text-granite mb-2 text-3xl font-bold">Welcome Back</h2>
-          <p className="text-ash-grey font-medium">Log in to your BrainRot account</p>
+          <h2 className="text-granite mb-2 text-4xl font-bold">Welcome Back</h2>
+          <p className="text-ash-grey text-lg font-medium">Log in to your BrainRot account</p>
         </div>
 
         {errors.form && (
@@ -75,13 +75,14 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <div>
-            <label className="mb-1 ml-1 block text-base font-semibold" htmlFor="email">
+            <label className="mb-1 ml-1 block text-lg font-semibold" htmlFor="email">
               Email Address
             </label>
             <Input
               type="email"
               id="email"
               name="email"
+              size="lg"
               value={formData.email}
               onChange={handleChange}
               placeholder="john@example.com"
@@ -89,17 +90,17 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
                 stroke: errors.email ? '#ef4444' : undefined,
               }}
             />
-            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+            {errors.email && <p className="mt-1 text-base text-red-500">{errors.email}</p>}
           </div>
 
           <div>
             <div className="mb-1 ml-1 flex items-center justify-between">
-              <label className="text-base font-semibold" htmlFor="password">
+              <label className="text-lg font-semibold" htmlFor="password">
                 Password
               </label>
               <Link
                 href="/forgot-password"
-                className="text-granite text-sm font-semibold hover:underline"
+                className="text-granite text-base font-semibold hover:underline"
               >
                 Forgot Password?
               </Link>
@@ -108,6 +109,7 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
               type="password"
               id="password"
               name="password"
+              size="lg"
               value={formData.password}
               onChange={handleChange}
               placeholder="••••••••"
@@ -117,7 +119,7 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
             />
             {errors.password && (
               <div className="mt-1">
-                <p className="text-sm text-red-500">{errors.password}</p>
+                <p className="text-base text-red-500">{errors.password}</p>
               </div>
             )}
           </div>
@@ -158,7 +160,7 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
         <SocialAuthButtons />
       </div>
       <div className="bg-alabaster-grey/30 border-dust-grey/30 border-t py-4 text-center">
-        <p className="text-base">
+        <p className="text-lg">
           Don&apos;t have an account?{' '}
           {onToggle ? (
             <button
