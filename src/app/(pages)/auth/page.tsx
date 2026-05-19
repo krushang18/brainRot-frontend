@@ -14,7 +14,9 @@ export default function AuthPage() {
 
   return (
     <div className="bg-alabaster-grey flex min-h-screen items-center justify-center p-4 md:p-8">
-      <main className="w-full max-w-lg">
+      <main
+        className={`w-full transition-all duration-300 ease-in-out ${isLogin ? 'max-w-lg' : 'max-w-3xl'}`}
+      >
         <div className="mb-8 flex justify-center">
           <Badge
             size="lg"
