@@ -72,7 +72,7 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
 
         <div className="mb-8 text-center">
           <h2 className="text-granite mb-2 text-4xl font-bold">Create an account</h2>
-          <p className="text-ash-grey text-lg font-medium">
+          <p className="text-gunmetal text-lg font-medium">
             Join us today! It only takes a minute.
           </p>
         </div>

@@ -64,7 +64,7 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
 
         <div className="mb-8 text-center">
           <h2 className="text-granite mb-2 text-4xl font-bold">Welcome Back</h2>
-          <p className="text-ash-grey text-lg font-medium">Log in to your BrainRot account</p>
+          <p className="text-gunmetal text-lg font-medium">Log in to your BrainRot account</p>
         </div>
 
         {errors.form && (

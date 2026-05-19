@@ -5,7 +5,7 @@ export default function SocialAuthButtons() {
     <>
       <div className="mt-8 flex items-center justify-between">
         <span className="border-dust-grey w-1/5 border-b lg:w-1/4"></span>
-        <span className="text-ash-grey text-center text-xs font-medium uppercase">
+        <span className="text-gunmetal text-center text-xs font-semibold uppercase">
           Or continue with
         </span>
         <span className="border-dust-grey w-1/5 border-b lg:w-1/4"></span>
