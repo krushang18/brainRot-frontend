@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { Card, Input, Button } from 'sketchbook-ui';
 import SocialAuthButtons from '../auth/SocialAuthButtons';
 import { useAuthForm } from '@/hooks/useAuthForm';
 
@@ -50,7 +51,7 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
   });
 
   return (
-    <div className="text-gunmetal w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
+    <Card variant="notebook" className="w-full max-w-md bg-white shadow-xl">
       <div className="p-8">
         {/* Sliding Tabs Switcher */}
         <div className="bg-alabaster-grey border-dust-grey/30 mb-8 flex rounded-xl border p-1">
@@ -82,96 +83,79 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <div>
-            <label className="mb-1 block text-sm font-semibold" htmlFor="name">
-              Full Name
-            </label>
-            <input
+            <Input
               type="text"
               id="name"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className={`w-full rounded-lg border px-4 py-3 transition-colors focus:ring-2 focus:outline-none ${
-                errors.name
-                  ? 'border-red-500 bg-red-50 focus:ring-red-200'
-                  : 'border-dust-grey focus:border-granite focus:ring-ash-grey/30 bg-alabaster-grey/50'
-              }`}
+              label="Full Name"
               placeholder="John Doe"
+              colors={{
+                stroke: errors.name ? '#ef4444' : undefined,
+              }}
             />
             {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-semibold" htmlFor="email">
-              Email Address
-            </label>
-            <input
+            <Input
               type="email"
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={`w-full rounded-lg border px-4 py-3 transition-colors focus:ring-2 focus:outline-none ${
-                errors.email
-                  ? 'border-red-500 bg-red-50 focus:ring-red-200'
-                  : 'border-dust-grey focus:border-granite focus:ring-ash-grey/30 bg-alabaster-grey/50'
-              }`}
+              label="Email Address"
               placeholder="john@example.com"
+              colors={{
+                stroke: errors.email ? '#ef4444' : undefined,
+              }}
             />
             {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-semibold" htmlFor="password">
-              Password
-            </label>
-            <input
+            <Input
               type="password"
               id="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={`w-full rounded-lg border px-4 py-3 transition-colors focus:ring-2 focus:outline-none ${
-                errors.password
-                  ? 'border-red-500 bg-red-50 focus:ring-red-200'
-                  : 'border-dust-grey focus:border-granite focus:ring-ash-grey/30 bg-alabaster-grey/50'
-              }`}
+              label="Password"
               placeholder="••••••••"
+              colors={{
+                stroke: errors.password ? '#ef4444' : undefined,
+              }}
             />
             {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-semibold" htmlFor="confirmPassword">
-              Confirm Password
-            </label>
-            <input
+            <Input
               type="password"
               id="confirmPassword"
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={`w-full rounded-lg border px-4 py-3 transition-colors focus:ring-2 focus:outline-none ${
-                errors.confirmPassword
-                  ? 'border-red-500 bg-red-50 focus:ring-red-200'
-                  : 'border-dust-grey focus:border-granite focus:ring-ash-grey/30 bg-alabaster-grey/50'
-              }`}
+              label="Confirm Password"
               placeholder="••••••••"
+              colors={{
+                stroke: errors.confirmPassword ? '#ef4444' : undefined,
+              }}
             />
             {errors.confirmPassword && (
               <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
             )}
           </div>
 
-          <button
+          <Button
             type="submit"
-            data-testid="submit-button"
             disabled={isLoading}
-            className="bg-granite flex w-full items-center justify-center rounded-lg px-4 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#34412f] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex w-full items-center justify-center"
           >
             {isLoading ? (
               <svg
-                className="h-5 w-5 animate-spin text-white"
+                className="h-5 w-5 animate-spin text-current"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -193,7 +177,7 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
             ) : (
               'Create Account'
             )}
-          </button>
+          </Button>
         </form>
         <SocialAuthButtons />
       </div>
@@ -218,6 +202,6 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
           )}
         </p>
       </div>
-    </div>
+    </Card>
   );
 }

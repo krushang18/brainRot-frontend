@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Badge } from 'sketchbook-ui';
 import LoginForm from '@/components/login/LoginForm';
 import SignupForm from '@/components/signup/SignupForm';
 
@@ -15,9 +16,13 @@ export default function AuthPage() {
     <div className="bg-alabaster-grey flex min-h-screen items-center justify-center p-4 md:p-8">
       <main className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
-          <div className="bg-granite flex h-12 items-center justify-center rounded-xl px-5 shadow-lg">
-            <span className="text-xl font-bold tracking-wide text-white">BrainRot</span>
-          </div>
+          <Badge
+            size="lg"
+            colors={{ bg: 'var(--granite)', text: '#fff', stroke: '#000' }}
+            typography={{ fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'Caveat, cursive' }}
+          >
+            BrainRot
+          </Badge>
         </div>
 
         <div className="transition-all duration-300 ease-in-out">
