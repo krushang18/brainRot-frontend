@@ -10,7 +10,7 @@
   --gunmetal: #3f403f;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-alabaster-grey: var(--alabaster-grey);

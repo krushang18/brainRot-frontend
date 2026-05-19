@@ -80,7 +80,7 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <div>
             <label className="mb-1 block text-sm font-semibold" htmlFor="name">
               Full Name
@@ -210,7 +210,7 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
             </button>
           ) : (
             <Link
-              href="/login"
+              href="/auth"
               className="text-granite font-semibold transition-colors hover:text-[#34412f]"
             >
               Log in

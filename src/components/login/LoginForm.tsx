@@ -169,7 +169,7 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
             </button>
           ) : (
             <Link
-              href="/signup"
+              href="/auth"
               className="text-granite font-semibold transition-colors hover:text-[#34412f]"
             >
               Sign up
