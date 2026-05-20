@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&display=swap');
+@import 'tailwindcss';
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --alabaster-grey: #e6e8e6;
+  --dust-grey: #ced0ce;
+  --ash-grey: #9fb8ad;
+  --granite: #475841;
+  --gunmetal: #3f403f;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-alabaster-grey: var(--alabaster-grey);
+  --color-dust-grey: var(--dust-grey);
+  --color-ash-grey: var(--ash-grey);
+  --color-granite: var(--granite);
+  --color-gunmetal: var(--gunmetal);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
