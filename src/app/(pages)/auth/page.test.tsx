@@ -30,7 +30,7 @@ describe('AuthPage', () => {
   it('renders correctly and defaults to Login page', () => {
     render(<AuthPage />);
 
-    expect(screen.getByText('BrainRot')).toBeInTheDocument();
+    expect(screen.getAllByText('BrainRot')[0]).toBeInTheDocument();
     expect(screen.getByTestId('mock-login-form')).toBeInTheDocument();
     expect(screen.queryByTestId('mock-signup-form')).not.toBeInTheDocument();
   });
