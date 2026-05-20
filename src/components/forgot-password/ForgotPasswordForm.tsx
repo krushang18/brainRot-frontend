@@ -84,7 +84,7 @@ export default function ForgotPasswordForm() {
                     type="button"
                     onClick={() => setIsSuccess(false)}
                     colors={{
-                      bg: '#fff',
+                      bg: '#0a0a0aff',
                       stroke: 'var(--granite)',
                       text: 'var(--granite)',
                     }}
