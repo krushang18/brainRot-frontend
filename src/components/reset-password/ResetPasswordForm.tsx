@@ -23,7 +23,7 @@ function ResetPasswordFormContent() {
       newErrors.password = 'Password is required';
     } else if (values.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
-    } else if (!/[0-9]/.test(values.password) && !/[!@#$%^&*(),.?":{}|<>]/.test(values.password)) {
+    } else if (!/\d/.test(values.password) && !/[!@#$%^&*(),.?":{}|<>]/.test(values.password)) {
       newErrors.password = 'Password must contain at least one number or special character';
     }
 
@@ -81,7 +81,7 @@ function ResetPasswordFormContent() {
               </div>
 
               <div className="flex justify-center pt-2">
-                <Link href="/auth" passHref legacyBehavior>
+                <Link href="/auth">
                   <Button
                     type="button"
                     colors={{
