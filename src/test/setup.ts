@@ -1,9 +1,15 @@
 import '@testing-library/jest-dom';
 
 class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe() {
+    return;
+  }
+  unobserve() {
+    return;
+  }
+  disconnect() {
+    return;
+  }
 }
 
-global.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
+globalThis.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
