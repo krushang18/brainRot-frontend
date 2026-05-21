@@ -32,7 +32,7 @@ export default function OTPVerification({
     }
   }, [resendCooldown]);
 
-  const handleVerify = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleVerify = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (otp.length !== 6) {
       setError('Please enter the complete 6-digit verification code.');
