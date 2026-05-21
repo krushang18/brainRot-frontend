@@ -184,7 +184,7 @@ export default function OTPVerification({
       </div>
 
       {/* Sketchbook back-row action panel */}
-      <div className="bg-alabaster-grey/30 border-dust-grey/30 flex items-center justify-between border-t px-8 py-4 text-base">
+      <div className="bg-alabaster-grey/30 border-dust-grey/30 flex w-full items-center justify-between border-t px-8 py-4 text-base">
         <button
           type="button"
           onClick={onBack}
