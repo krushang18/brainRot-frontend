@@ -80,7 +80,7 @@ export default function OTPVerification({
   const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawVal = e.target.value;
     // Keep only numeric characters and restrict length to 6
-    const numericVal = rawVal.replace(/\D/g, '').slice(0, 6);
+    const numericVal = rawVal.replaceAll(/\D/g, '').slice(0, 6);
     setOtp(numericVal);
     if (error) setError('');
   };
