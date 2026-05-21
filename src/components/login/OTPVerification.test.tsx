@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import OTPVerification from './OTPVerification';
 
 describe('OTPVerification', () => {
@@ -109,6 +109,64 @@ describe('OTPVerification', () => {
 
     // Verify button shows cooldown state and is disabled
     expect(screen.getByRole('button', { name: /resend in 60s/i })).toBeDisabled();
+  });
+
+  it('displays API error message on submission failure when error is not an instance of Error', async () => {
+    const errorProps = {
+      ...defaultProps,
+      onSubmitOtp: vi
+        .fn()
+        .mockImplementation(() => Promise.reject('Generic non-error object rejection')),
+    };
+    render(<OTPVerification {...errorProps} />);
+    const user = userEvent.setup();
+    const otpInput = screen.getByPlaceholderText('••••••');
+
+    await user.type(otpInput, '000000');
+    fireEvent.click(screen.getByRole('button', { name: /verify device/i }));
+
+    expect(
+      await screen.findByText(/invalid or expired otp\. please try again\./i)
+    ).toBeInTheDocument();
+    expect(errorProps.onSuccess).not.toHaveBeenCalled();
+  });
+
+  it('displays error message on resend OTP failure', async () => {
+    const errorProps = {
+      ...defaultProps,
+      onResendOtp: vi
+        .fn()
+        .mockImplementation(() => Promise.reject(new Error('Failed to send verification email'))),
+    };
+    render(<OTPVerification {...errorProps} />);
+
+    const resendBtn = screen.getByRole('button', { name: /resend code/i });
+    fireEvent.click(resendBtn);
+
+    expect(errorProps.onResendOtp).toHaveBeenCalled();
+    expect(await screen.findByText(/failed to send verification email/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /resend code/i })).not.toHaveTextContent(
+      /resend in/i
+    );
+  });
+
+  it('displays fallback error message on resend OTP failure when error is not an instance of Error', async () => {
+    const errorProps = {
+      ...defaultProps,
+      onResendOtp: vi.fn().mockImplementation(() => Promise.reject('Raw string failure')),
+    };
+    render(<OTPVerification {...errorProps} />);
+
+    const resendBtn = screen.getByRole('button', { name: /resend code/i });
+    fireEvent.click(resendBtn);
+
+    expect(errorProps.onResendOtp).toHaveBeenCalled();
+    expect(
+      await screen.findByText(/could not resend otp\. please try again later\./i)
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /resend code/i })).not.toHaveTextContent(
+      /resend in/i
+    );
   });
 
   it('triggers onBack callback when clicking back to login link', () => {
