@@ -71,7 +71,7 @@ export default function ForgotPasswordForm() {
                   <span className="text-granite font-bold break-all underline">
                     {submittedEmail}
                   </span>
-                  .
+                  {'.'}
                 </p>
               </div>
 
