@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Card, Input, Button } from 'sketchbook-ui';
 import { useAuthForm } from '@/hooks/useAuthForm';
+import { authService } from '@/services/authService';
 
 const initialState = {
   email: '',
@@ -30,9 +31,7 @@ export default function ForgotPasswordForm() {
     initialState,
     validate,
     onSubmit: async (values) => {
-      // Simulate API call to dispatch reset email
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log('Password reset requested for:', values.email);
+      await authService.forgotPassword({ email: values.email });
       setSubmittedEmail(values.email);
       setIsSuccess(true);
     },
