@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const getBaseURL = () => {
-  if (globalThis.window !== undefined && globalThis.window.location !== undefined) {
+  if (globalThis.window?.location !== undefined) {
     const hostname = globalThis.window.location.hostname;
     if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
       return `http://${hostname}:8000`;
