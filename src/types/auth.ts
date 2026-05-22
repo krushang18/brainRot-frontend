@@ -61,3 +61,9 @@ export interface UserSession {
   email: string;
   fullName: string;
 }
+
+export interface UserProfileResponse {
+  id: string;
+  full_name: string;
+  email: string;
+}
