@@ -79,7 +79,7 @@ describe('LoginForm', () => {
     await waitFor(
       () => {
         expect(mockLogin).toHaveBeenCalledWith('john@example.com', 'password123');
-        expect(mockPush).toHaveBeenCalledWith('/');
+        expect(mockPush).toHaveBeenCalledWith('/settings');
       },
       { timeout: 2000 }
     );
