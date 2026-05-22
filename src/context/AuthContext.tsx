@@ -1,6 +1,14 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+  useMemo,
+} from 'react';
 import { authService } from '@/services/authService';
 import { UserSession } from '@/types/auth';
 
@@ -27,7 +35,7 @@ function decodeJwt(token: string) {
       globalThis
         .atob(base64)
         .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .map((c) => '%' + ('00' + (c.codePointAt(0) ?? 0).toString(16)).slice(-2))
         .join('')
     );
     return JSON.parse(jsonPayload);
@@ -36,7 +44,7 @@ function decodeJwt(token: string) {
   }
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [user, setUser] = useState<UserSession | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -44,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Auto-validate session and hydrate user profile on startup
   useEffect(() => {
     function checkSession() {
-      if (typeof window !== 'undefined') {
+      if (typeof globalThis.window !== 'undefined') {
         const token = localStorage.getItem('accessToken');
         if (token) {
           const payload = decodeJwt(token);
@@ -67,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkSession();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     const data = await authService.login({ email, password });
 
     if (!data.otp_required && data.access_token && data.refresh_token) {
@@ -84,9 +92,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return { otpRequired: data.otp_required };
-  };
+  }, []);
 
-  const verifyOtp = async (email: string, otp: string) => {
+  const verifyOtp = useCallback(async (email: string, otp: string) => {
     const data = await authService.verifyOtp({ email, otp });
 
     if (data.access_token && data.refresh_token) {
@@ -101,31 +109,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setIsAuthenticated(true);
     }
-  };
+  }, []);
 
-  const signup = async (fullName: string, email: string, password: string, confirm: string) => {
-    const data = await authService.signup({
-      full_name: fullName,
-      email,
-      password,
-      confirm_password: confirm,
-    });
-
-    if (data.access_token && data.refresh_token) {
-      localStorage.setItem('accessToken', data.access_token);
-      localStorage.setItem('refreshToken', data.refresh_token);
-
-      const payload = decodeJwt(data.access_token);
-      setUser({
-        id: payload?.sub || '',
-        email: payload?.email || email,
-        fullName: payload?.fullName || fullName,
+  const signup = useCallback(
+    async (fullName: string, email: string, password: string, confirm: string) => {
+      const data = await authService.signup({
+        full_name: fullName,
+        email,
+        password,
+        confirm_password: confirm,
       });
-      setIsAuthenticated(true);
-    }
-  };
 
-  const logout = async () => {
+      if (data.access_token && data.refresh_token) {
+        localStorage.setItem('accessToken', data.access_token);
+        localStorage.setItem('refreshToken', data.refresh_token);
+
+        const payload = decodeJwt(data.access_token);
+        setUser({
+          id: payload?.sub || '',
+          email: payload?.email || email,
+          fullName: payload?.fullName || fullName,
+        });
+        setIsAuthenticated(true);
+      }
+    },
+    []
+  );
+
+  const logout = useCallback(async () => {
     const refresh = localStorage.getItem('refreshToken');
     if (refresh) {
       try {
@@ -139,15 +150,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('refreshToken');
     setUser(null);
     setIsAuthenticated(false);
-  };
+  }, []);
 
-  return (
-    <AuthContext.Provider
-      value={{ user, isAuthenticated, isLoading, login, verifyOtp, signup, logout }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const contextValue = useMemo(
+    () => ({ user, isAuthenticated, isLoading, login, verifyOtp, signup, logout }),
+    [user, isAuthenticated, isLoading, login, verifyOtp, signup, logout]
   );
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
