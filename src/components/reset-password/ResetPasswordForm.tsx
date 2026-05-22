@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Card, Input, Button } from 'sketchbook-ui';
 import { useAuthForm } from '@/hooks/useAuthForm';
+import { authService } from '@/services/authService';
 
 const initialState = {
   password: '',
@@ -23,8 +24,13 @@ function ResetPasswordFormContent() {
       newErrors.password = 'Password is required';
     } else if (values.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
-    } else if (!/\d/.test(values.password) && !/[!@#$%^&*(),.?":{}|<>]/.test(values.password)) {
-      newErrors.password = 'Password must contain at least one number or special character';
+    } else if (
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/.test(
+        values.password
+      )
+    ) {
+      newErrors.password =
+        'Password must contain uppercase, lowercase, number, and special character';
     }
 
     if (!values.confirmPassword) {
@@ -39,10 +45,12 @@ function ResetPasswordFormContent() {
   const { formData, errors, isLoading, handleChange, handleSubmit } = useAuthForm({
     initialState,
     validate,
-    onSubmit: async () => {
-      // Simulate API call to reset password
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log('Password reset successful with token:', token);
+    onSubmit: async (values) => {
+      await authService.resetPassword({
+        token,
+        new_password: values.password,
+        confirm_password: values.confirmPassword,
+      });
       setIsSuccess(true);
     },
   });

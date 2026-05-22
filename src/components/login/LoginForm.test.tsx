@@ -12,6 +12,28 @@ vi.mock('next/link', () => {
   };
 });
 
+const mockLogin = vi.fn().mockResolvedValue({ otpRequired: false });
+const mockVerifyOtp = vi.fn().mockResolvedValue(undefined);
+const mockPush = vi.fn();
+
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    login: mockLogin,
+    verifyOtp: mockVerifyOtp,
+    signup: vi.fn(),
+    logout: vi.fn(),
+    user: null,
+    isAuthenticated: false,
+    isLoading: false,
+  }),
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
+
 describe('LoginForm', () => {
   it('renders correctly', () => {
     render(<LoginForm />);
@@ -42,7 +64,6 @@ describe('LoginForm', () => {
   });
 
   it('submits successfully with valid data', async () => {
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const user = userEvent.setup();
 
     render(<LoginForm />);
@@ -57,11 +78,10 @@ describe('LoginForm', () => {
 
     await waitFor(
       () => {
-        expect(consoleSpy).toHaveBeenCalledWith('Login data:', expect.any(Object));
+        expect(mockLogin).toHaveBeenCalledWith('john@example.com', 'password123');
+        expect(mockPush).toHaveBeenCalledWith('/');
       },
       { timeout: 2000 }
     );
-
-    consoleSpy.mockRestore();
   });
 });

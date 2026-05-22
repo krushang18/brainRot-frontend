@@ -2,9 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card, Input, Button } from 'sketchbook-ui';
 import SocialAuthButtons from '../auth/SocialAuthButtons';
 import { useAuthForm } from '@/hooks/useAuthForm';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SignupFormProps {
   onToggle?: () => void;
@@ -18,6 +20,9 @@ const initialState = {
 };
 
 export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
+  const { signup } = useAuth();
+  const router = useRouter();
+
   const validate = (values: typeof initialState) => {
     const newErrors: Record<string, string> = {};
     if (!values.name.trim()) newErrors.name = 'Name is required';
@@ -31,8 +36,15 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
     }
     if (!values.password) {
       newErrors.password = 'Password is required';
-    } else if (values.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (values.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    } else if (
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/.test(
+        values.password
+      )
+    ) {
+      newErrors.password =
+        'Password must contain uppercase, lowercase, number, and special character';
     }
     if (values.password !== values.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
@@ -44,9 +56,8 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
     initialState,
     validate,
     onSubmit: async (values) => {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log('Signup data:', values);
+      await signup(values.name, values.email, values.password, values.confirmPassword);
+      router.push('/');
     },
   });
 

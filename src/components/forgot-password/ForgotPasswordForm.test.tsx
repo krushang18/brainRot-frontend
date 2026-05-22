@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import ForgotPasswordForm from './ForgotPasswordForm';
+import { authService } from '@/services/authService';
 
 vi.mock('next/link', () => {
   return {
@@ -11,6 +12,12 @@ vi.mock('next/link', () => {
     },
   };
 });
+
+vi.mock('@/services/authService', () => ({
+  authService: {
+    forgotPassword: vi.fn().mockResolvedValue({ message: 'Success' }),
+  },
+}));
 
 describe('ForgotPasswordForm', () => {
   it('renders correctly', () => {
@@ -57,7 +64,6 @@ describe('ForgotPasswordForm', () => {
   });
 
   it('submits successfully with valid email and shows loading and success screens', async () => {
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const user = userEvent.setup();
 
     render(<ForgotPasswordForm />);
@@ -84,8 +90,8 @@ describe('ForgotPasswordForm', () => {
       { timeout: 2000 }
     );
 
-    // Verify console output
-    expect(consoleSpy).toHaveBeenCalledWith('Password reset requested for:', 'test@example.com');
+    // Verify mock call
+    expect(authService.forgotPassword).toHaveBeenCalledWith({ email: 'test@example.com' });
 
     // Test clicking "Try Again" to go back to the form
     const tryAgainBtn = screen.getByRole('button', { name: /try again/i });
@@ -95,8 +101,6 @@ describe('ForgotPasswordForm', () => {
     // Form should be visible again
     expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
     expect(screen.queryByTestId('success-alert')).not.toBeInTheDocument();
-
-    consoleSpy.mockRestore();
   });
 
   it('contains the back-link to /auth routing', () => {

@@ -1,10 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card, Input, Button } from 'sketchbook-ui';
 import SocialAuthButtons from '../auth/SocialAuthButtons';
 import { useAuthForm } from '@/hooks/useAuthForm';
+import { useAuth } from '@/hooks/useAuth';
+import { authService } from '@/services/authService';
+import OTPVerification from './OTPVerification';
 
 interface LoginFormProps {
   onToggle?: () => void;
@@ -16,6 +20,10 @@ const initialState = {
 };
 
 export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
+  const { login, verifyOtp } = useAuth();
+  const router = useRouter();
+  const [showOtp, setShowOtp] = useState(false);
+
   const validate = (values: typeof initialState) => {
     const newErrors: Record<string, string> = {};
     if (!values.email.trim()) {
@@ -36,11 +44,32 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
     initialState,
     validate,
     onSubmit: async (values) => {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log('Login data:', values);
+      const { otpRequired } = await login(values.email, values.password);
+      if (otpRequired) {
+        setShowOtp(true);
+      } else {
+        router.push('/');
+      }
     },
   });
+
+  if (showOtp) {
+    return (
+      <OTPVerification
+        email={formData.email}
+        onSuccess={() => {
+          router.push('/');
+        }}
+        onBack={() => setShowOtp(false)}
+        onSubmitOtp={async (otp) => {
+          await verifyOtp(formData.email, otp);
+        }}
+        onResendOtp={async () => {
+          await authService.resendOtp({ email: formData.email });
+        }}
+      />
+    );
+  }
 
   return (
     <Card variant="notebook" className="w-full max-w-3xl bg-white shadow-xl">

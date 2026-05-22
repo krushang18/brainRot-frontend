@@ -25,6 +25,14 @@ vi.mock('next/navigation', () => {
   };
 });
 
+import { authService } from '@/services/authService';
+
+vi.mock('@/services/authService', () => ({
+  authService: {
+    resetPassword: vi.fn().mockResolvedValue({ message: 'Success' }),
+  },
+}));
+
 describe('ResetPasswordForm', () => {
   it('renders correctly', () => {
     render(<ResetPasswordForm />);
@@ -61,7 +69,7 @@ describe('ResetPasswordForm', () => {
     });
   });
 
-  it('validates password must contain at least one number or special character', async () => {
+  it('validates password complexity rules', async () => {
     render(<ResetPasswordForm />);
 
     const passwordInput = screen.getByLabelText(/^new password$/i);
@@ -74,7 +82,9 @@ describe('ResetPasswordForm', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText('Password must contain at least one number or special character')
+        screen.getByText(
+          'Password must contain uppercase, lowercase, number, and special character'
+        )
       ).toBeInTheDocument();
     });
   });
@@ -127,6 +137,13 @@ describe('ResetPasswordForm', () => {
       },
       { timeout: 2000 }
     );
+
+    // Verify mock api call
+    expect(authService.resetPassword).toHaveBeenCalledWith({
+      token: 'mock-reset-token-xyz',
+      new_password: 'Password123!',
+      confirm_password: 'Password123!',
+    });
   });
 
   it('contains the back-link to /auth portal', () => {

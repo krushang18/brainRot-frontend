@@ -12,6 +12,21 @@ vi.mock('next/link', () => {
   };
 });
 
+const mockSignup = vi.fn().mockResolvedValue(undefined);
+const mockPush = vi.fn();
+
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    signup: mockSignup,
+  }),
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
+
 describe('SignupForm', () => {
   it('renders correctly', () => {
     render(<SignupForm />);
@@ -54,26 +69,25 @@ describe('SignupForm', () => {
     await user.type(passwordInput, '12345');
 
     fireEvent.click(screen.getByTestId('submit-button'));
-    expect(await screen.findByText(/password must be at least 6 characters/i)).toBeInTheDocument();
+    expect(await screen.findByText(/password must be at least 8 characters/i)).toBeInTheDocument();
 
     await user.clear(passwordInput);
-    await user.type(passwordInput, '123456');
-    await user.type(confirmPasswordInput, '1234567');
+    await user.type(passwordInput, 'Password123!');
+    await user.type(confirmPasswordInput, 'Password123!Mismatch');
 
     fireEvent.click(screen.getByTestId('submit-button'));
     expect(await screen.findByText(/passwords do not match/i)).toBeInTheDocument();
   });
 
   it('submits successfully with valid data', async () => {
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const user = userEvent.setup();
 
     render(<SignupForm />);
 
     await user.type(screen.getByLabelText(/full name/i), 'John Doe');
     await user.type(screen.getByLabelText(/email address/i), 'john@example.com');
-    await user.type(screen.getByLabelText(/^password/i), 'password123');
-    await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+    await user.type(screen.getByLabelText(/^password/i), 'Password123!');
+    await user.type(screen.getByLabelText(/confirm password/i), 'Password123!');
 
     fireEvent.click(screen.getByTestId('submit-button'));
 
@@ -82,11 +96,15 @@ describe('SignupForm', () => {
 
     await waitFor(
       () => {
-        expect(consoleSpy).toHaveBeenCalledWith('Signup data:', expect.any(Object));
+        expect(mockSignup).toHaveBeenCalledWith(
+          'John Doe',
+          'john@example.com',
+          'Password123!',
+          'Password123!'
+        );
+        expect(mockPush).toHaveBeenCalledWith('/');
       },
       { timeout: 2000 }
     );
-
-    consoleSpy.mockRestore();
   });
 });
