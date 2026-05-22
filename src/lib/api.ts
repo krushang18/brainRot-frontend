@@ -11,7 +11,7 @@ const api = axios.create({
 // Request Interceptor: Automatically inject short-lived access token into Headers
 api.interceptors.request.use(
   (config) => {
-    if (typeof globalThis.window !== 'undefined') {
+    if (globalThis.window !== undefined) {
       const token = localStorage.getItem('accessToken');
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -63,7 +63,7 @@ api.interceptors.response.use(
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
 
-        if (typeof globalThis.window !== 'undefined') {
+        if (globalThis.window !== undefined) {
           globalThis.location.href = '/auth';
         }
         throw refreshError;

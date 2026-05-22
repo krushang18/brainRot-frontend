@@ -52,7 +52,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   // Auto-validate session and hydrate user profile on startup
   useEffect(() => {
     function checkSession() {
-      if (typeof globalThis.window !== 'undefined') {
+      if (globalThis.window !== undefined) {
         const token = localStorage.getItem('accessToken');
         if (token) {
           const payload = decodeJwt(token);
