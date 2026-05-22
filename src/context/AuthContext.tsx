@@ -16,8 +16,8 @@ interface AuthContextType {
   user: UserSession | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ otpRequired: boolean }>;
-  verifyOtp: (email: string, otp: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ otpRequired: boolean; deviceId?: string }>;
+  verifyOtp: (email: string, otp: string, deviceId?: string) => Promise<void>;
   signup: (fullName: string, email: string, password: string, confirm: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -91,11 +91,11 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
       setIsAuthenticated(true);
     }
 
-    return { otpRequired: data.otp_required };
+    return { otpRequired: data.otp_required, deviceId: data.device_id };
   }, []);
 
-  const verifyOtp = useCallback(async (email: string, otp: string) => {
-    const data = await authService.verifyOtp({ email, otp });
+  const verifyOtp = useCallback(async (email: string, otp: string, deviceId?: string) => {
+    const data = await authService.verifyOtp({ email, otp, device_id: deviceId });
 
     if (data.access_token && data.refresh_token) {
       localStorage.setItem('accessToken', data.access_token);
