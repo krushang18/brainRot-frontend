@@ -64,7 +64,7 @@ export default function SettingsForm() {
   // Decode did from access token and fetch devices list
   useEffect(() => {
     if (isAuthenticated) {
-      if (typeof window !== 'undefined') {
+      if (globalThis.window !== undefined) {
         const token = localStorage.getItem('accessToken');
         if (token) {
           try {
@@ -126,9 +126,7 @@ export default function SettingsForm() {
       newErrors.current_password = 'Current password is required';
     }
 
-    if (!formData.new_password) {
-      newErrors.new_password = 'New password is required';
-    } else {
+    if (formData.new_password) {
       if (formData.new_password.length < 8) {
         newErrors.new_password = 'Password must be at least 8 characters';
       }
@@ -144,6 +142,8 @@ export default function SettingsForm() {
       if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.new_password)) {
         newErrors.new_password = 'Must contain at least one special character';
       }
+    } else {
+      newErrors.new_password = 'New password is required';
     }
 
     if (!formData.confirm_password) {
@@ -155,7 +155,7 @@ export default function SettingsForm() {
     return newErrors;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSuccessMessage('');
     setErrors({});
@@ -236,9 +236,83 @@ export default function SettingsForm() {
       const detail =
         errorObj.response?.data?.detail || errorObj.message || 'Failed to logout from all devices.';
       setDevicesError(typeof detail === 'string' ? detail : 'Failed to logout from all devices.');
-      setDevicesLoading(false);
     }
   };
+
+  let devicesContent;
+  if (devicesLoading && devices.length === 0) {
+    devicesContent = (
+      <div className="py-8 text-center" data-testid="devices-loading-placeholder">
+        <div className="border-granite mx-auto h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
+        <p className="text-gunmetal mt-2 font-medium">Fetching active sessions...</p>
+      </div>
+    );
+  } else if (devices.length === 0) {
+    devicesContent = (
+      <p className="text-gunmetal/60 py-4 text-center font-medium">
+        No other active devices found.
+      </p>
+    );
+  } else {
+    devicesContent = (
+      <div className="divide-gunmetal/15 space-y-4 divide-y divide-dashed">
+        {devices.map((device) => {
+          const devId = device.device_id;
+          const devWithLegacy = device as DeviceDetails & { name?: string; ip?: string };
+          const name = device.device_name || devWithLegacy.name || 'Unknown Device';
+          const ip = device.ip_address || devWithLegacy.ip || 'Unknown IP';
+          const isCurrent = devId === currentDeviceId;
+
+          return (
+            <div
+              key={devId}
+              className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center"
+              data-testid={`device-item-${devId}`}
+            >
+              <div className="flex items-start gap-3">
+                <span className="mt-1 text-3xl select-none">
+                  {name.toLowerCase().includes('phone') || name.toLowerCase().includes('mobile')
+                    ? '📱'
+                    : '💻'}
+                </span>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-gunmetal text-lg font-bold">{name}</span>
+                    {isCurrent && (
+                      <span className="bg-ash-grey/25 text-granite border-granite/40 rounded-full border px-2.5 py-0.5 font-['Caveat',_cursive] text-xs font-bold">
+                        This Device
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-gunmetal/60 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium">
+                    <span>
+                      IP: <span className="font-mono text-xs">{ip}</span>
+                    </span>
+                    <span className="hidden sm:inline">•</span>
+                    <span>Last active: {new Date(device.last_used).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => handleRevokeDevice(devId)}
+                colors={{
+                  bg: '#fff',
+                  stroke: isCurrent ? 'var(--granite)' : 'var(--gunmetal)',
+                  text: isCurrent ? 'var(--granite)' : 'var(--gunmetal)',
+                }}
+                className="self-end text-sm hover:bg-red-50/50 sm:self-center"
+                disabled={devicesLoading}
+                data-testid={`revoke-button-${devId}`}
+              >
+                {isCurrent ? 'Logout' : 'Revoke'}
+              </Button>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-alabaster-grey min-h-screen px-4 py-8 sm:px-6 lg:px-8">
@@ -517,76 +591,7 @@ export default function SettingsForm() {
                 </div>
               )}
 
-              {devicesLoading && devices.length === 0 ? (
-                <div className="py-8 text-center" data-testid="devices-loading-placeholder">
-                  <div className="border-granite mx-auto h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
-                  <p className="text-gunmetal mt-2 font-medium">Fetching active sessions...</p>
-                </div>
-              ) : devices.length === 0 ? (
-                <p className="text-gunmetal/60 py-4 text-center font-medium">
-                  No other active devices found.
-                </p>
-              ) : (
-                <div className="divide-gunmetal/15 space-y-4 divide-y divide-dashed">
-                  {devices.map((device) => {
-                    const devId = device.device_id;
-                    const devWithLegacy = device as DeviceDetails & { name?: string; ip?: string };
-                    const name = device.device_name || devWithLegacy.name || 'Unknown Device';
-                    const ip = device.ip_address || devWithLegacy.ip || 'Unknown IP';
-                    const isCurrent = devId === currentDeviceId;
-
-                    return (
-                      <div
-                        key={devId}
-                        className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center"
-                        data-testid={`device-item-${devId}`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <span className="mt-1 text-3xl select-none">
-                            {name.toLowerCase().includes('phone') ||
-                            name.toLowerCase().includes('mobile')
-                              ? '📱'
-                              : '💻'}
-                          </span>
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-gunmetal text-lg font-bold">{name}</span>
-                              {isCurrent && (
-                                <span className="bg-ash-grey/25 text-granite border-granite/40 rounded-full border px-2.5 py-0.5 font-['Caveat',_cursive] text-xs font-bold">
-                                  This Device
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-gunmetal/60 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium">
-                              <span>
-                                IP: <span className="font-mono text-xs">{ip}</span>
-                              </span>
-                              <span className="hidden sm:inline">•</span>
-                              <span>
-                                Last active: {new Date(device.last_used).toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <Button
-                          onClick={() => handleRevokeDevice(devId)}
-                          colors={{
-                            bg: '#fff',
-                            stroke: isCurrent ? 'var(--granite)' : 'var(--gunmetal)',
-                            text: isCurrent ? 'var(--granite)' : 'var(--gunmetal)',
-                          }}
-                          className="self-end text-sm hover:bg-red-50/50 sm:self-center"
-                          disabled={devicesLoading}
-                          data-testid={`revoke-button-${devId}`}
-                        >
-                          {isCurrent ? 'Logout' : 'Revoke'}
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              {devicesContent}
             </div>
           </Card>
         </div>

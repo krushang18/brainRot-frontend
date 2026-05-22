@@ -359,4 +359,71 @@ describe('SettingsForm', () => {
       /Failed to retrieve active devices\./i
     );
   });
+
+  it('handles invalid jwt token in localStorage gracefully', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    localStorage.setItem('accessToken', 'invalid-token-without-split');
+
+    render(<SettingsForm />);
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to decode did from token:'),
+        expect.any(Error)
+      );
+    });
+    consoleSpy.mockRestore();
+  });
+
+  it('handles error when revoking a device fails', async () => {
+    mockRevokeDevice.mockRejectedValue({
+      response: {
+        data: {
+          detail: 'Failed to revoke device backend error',
+        },
+      },
+    });
+
+    render(<SettingsForm />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Safari on iPhone')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('revoke-button-other-device-id'));
+
+    expect(await screen.findByTestId('device-error-alert')).toHaveTextContent(
+      /Failed to revoke device backend error/i
+    );
+  });
+
+  it('handles error when revoking all devices fails', async () => {
+    mockRevokeAllDevices.mockRejectedValue(new Error('Revoke all failed'));
+
+    render(<SettingsForm />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Safari on iPhone')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('logout-all-button'));
+
+    expect(await screen.findByTestId('device-error-alert')).toHaveTextContent(/Revoke all failed/i);
+  });
+
+  it('renders legacy device properties successfully when standard ones are missing', async () => {
+    mockListDevices.mockResolvedValue([
+      {
+        device_id: 'legacy-device',
+        name: 'Legacy Chrome',
+        ip: '8.8.8.8',
+        last_used: '2026-05-22T10:00:00.000Z',
+      },
+    ]);
+
+    render(<SettingsForm />);
+
+    expect(await screen.findByText('Legacy Chrome')).toBeInTheDocument();
+    expect(screen.getByText('8.8.8.8')).toBeInTheDocument();
+  });
 });
