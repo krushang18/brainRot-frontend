@@ -15,15 +15,18 @@ export interface LoginResponse {
   access_token?: string;
   refresh_token?: string;
   token_type?: string;
+  device_id?: string;
 }
 
 export interface VerifyOTPRequest {
   email: string;
   otp: string;
+  device_id?: string;
 }
 
 export interface ResendOTPRequest {
   email: string;
+  device_id?: string;
 }
 
 export interface ForgotPasswordRequest {

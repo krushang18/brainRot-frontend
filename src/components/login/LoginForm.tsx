@@ -23,6 +23,7 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
   const { login, verifyOtp } = useAuth();
   const router = useRouter();
   const [showOtp, setShowOtp] = useState(false);
+  const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
 
   const validate = (values: typeof initialState) => {
     const newErrors: Record<string, string> = {};
@@ -44,8 +45,12 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
     initialState,
     validate,
     onSubmit: async (values) => {
-      const { otpRequired } = await login(values.email, values.password);
+      const { otpRequired, deviceId: returnedDeviceId } = await login(
+        values.email,
+        values.password
+      );
       if (otpRequired) {
+        setDeviceId(returnedDeviceId);
         setShowOtp(true);
       } else {
         router.push('/');
@@ -60,12 +65,15 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
         onSuccess={() => {
           router.push('/');
         }}
-        onBack={() => setShowOtp(false)}
+        onBack={() => {
+          setDeviceId(undefined);
+          setShowOtp(false);
+        }}
         onSubmitOtp={async (otp) => {
-          await verifyOtp(formData.email, otp);
+          await verifyOtp(formData.email, otp, deviceId);
         }}
         onResendOtp={async () => {
-          await authService.resendOtp({ email: formData.email });
+          await authService.resendOtp({ email: formData.email, device_id: deviceId });
         }}
       />
     );
