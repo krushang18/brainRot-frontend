@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import SettingsForm from './SettingsForm';
 import { authService } from '@/services/authService';
@@ -143,79 +142,71 @@ describe('SettingsForm', () => {
 
   it('validates complex new password criteria', async () => {
     render(<SettingsForm />);
-    const user = userEvent.setup();
 
     const currentInput = screen.getByLabelText(/current password/i);
     const newInput = screen.getByLabelText(/^new password/i);
     const confirmInput = screen.getByLabelText(/confirm new password/i);
     const saveBtn = screen.getByRole('button', { name: /save password/i });
 
-    await user.type(currentInput, 'oldpass123');
+    fireEvent.change(currentInput, { target: { value: 'oldpass123' } });
 
     // 1. Too short
-    await user.type(newInput, 'Short1!');
-    await user.type(confirmInput, 'Short1!');
+    fireEvent.change(newInput, { target: { value: 'Short1!' } });
+    fireEvent.change(confirmInput, { target: { value: 'Short1!' } });
     fireEvent.click(saveBtn);
     expect(await screen.findByText(/password must be at least 8 characters/i)).toBeInTheDocument();
 
     // 2. No uppercase
-    await user.clear(newInput);
-    await user.clear(confirmInput);
-    await user.type(newInput, 'lowercase1!');
-    await user.type(confirmInput, 'lowercase1!');
+    fireEvent.change(newInput, { target: { value: 'lowercase1!' } });
+    fireEvent.change(confirmInput, { target: { value: 'lowercase1!' } });
     fireEvent.click(saveBtn);
     expect(
       await screen.findByText(/must contain at least one uppercase letter/i)
     ).toBeInTheDocument();
 
     // 3. No lowercase
-    await user.clear(newInput);
-    await user.clear(confirmInput);
-    await user.type(newInput, 'UPPERCASE1!');
-    await user.type(confirmInput, 'UPPERCASE1!');
+    fireEvent.change(newInput, { target: { value: 'UPPERCASE1!' } });
+    fireEvent.change(confirmInput, { target: { value: 'UPPERCASE1!' } });
     fireEvent.click(saveBtn);
     expect(
       await screen.findByText(/must contain at least one lowercase letter/i)
     ).toBeInTheDocument();
 
     // 4. No digits
-    await user.clear(newInput);
-    await user.clear(confirmInput);
-    await user.type(newInput, 'NoDigitsHere!');
-    await user.type(confirmInput, 'NoDigitsHere!');
+    fireEvent.change(newInput, { target: { value: 'NoDigitsHere!' } });
+    fireEvent.change(confirmInput, { target: { value: 'NoDigitsHere!' } });
     fireEvent.click(saveBtn);
     expect(await screen.findByText(/must contain at least one number/i)).toBeInTheDocument();
 
     // 5. No special character
-    await user.clear(newInput);
-    await user.clear(confirmInput);
-    await user.type(newInput, 'NoSpecial123');
-    await user.type(confirmInput, 'NoSpecial123');
+    fireEvent.change(newInput, { target: { value: 'NoSpecial123' } });
+    fireEvent.change(confirmInput, { target: { value: 'NoSpecial123' } });
     fireEvent.click(saveBtn);
     expect(
       await screen.findByText(/must contain at least one special character/i)
     ).toBeInTheDocument();
 
     // 6. Mismatched confirm password
-    await user.clear(newInput);
-    await user.clear(confirmInput);
-    await user.type(newInput, 'ValidPass123!');
-    await user.type(confirmInput, 'DifferentPass123!');
+    fireEvent.change(newInput, { target: { value: 'ValidPass123!' } });
+    fireEvent.change(confirmInput, { target: { value: 'DifferentPass123!' } });
     fireEvent.click(saveBtn);
     expect(await screen.findByText(/passwords do not match/i)).toBeInTheDocument();
   });
 
   it('submits successfully with valid passwords', async () => {
-    const user = userEvent.setup();
     vi.mocked(authService.changePassword).mockResolvedValue({
       message: 'Password changed successfully.',
     });
 
     render(<SettingsForm />);
 
-    await user.type(screen.getByLabelText(/current password/i), 'CurrentPass123!');
-    await user.type(screen.getByLabelText(/^new password/i), 'NewPass123!');
-    await user.type(screen.getByLabelText(/confirm new password/i), 'NewPass123!');
+    fireEvent.change(screen.getByLabelText(/current password/i), {
+      target: { value: 'CurrentPass123!' },
+    });
+    fireEvent.change(screen.getByLabelText(/^new password/i), { target: { value: 'NewPass123!' } });
+    fireEvent.change(screen.getByLabelText(/confirm new password/i), {
+      target: { value: 'NewPass123!' },
+    });
 
     fireEvent.click(screen.getByRole('button', { name: /save password/i }));
 
@@ -238,7 +229,6 @@ describe('SettingsForm', () => {
   });
 
   it('displays API error alert when request fails', async () => {
-    const user = userEvent.setup();
     vi.mocked(authService.changePassword).mockRejectedValue({
       response: {
         data: {
@@ -249,9 +239,13 @@ describe('SettingsForm', () => {
 
     render(<SettingsForm />);
 
-    await user.type(screen.getByLabelText(/current password/i), 'WrongOldPass123!');
-    await user.type(screen.getByLabelText(/^new password/i), 'NewPass123!');
-    await user.type(screen.getByLabelText(/confirm new password/i), 'NewPass123!');
+    fireEvent.change(screen.getByLabelText(/current password/i), {
+      target: { value: 'WrongOldPass123!' },
+    });
+    fireEvent.change(screen.getByLabelText(/^new password/i), { target: { value: 'NewPass123!' } });
+    fireEvent.change(screen.getByLabelText(/confirm new password/i), {
+      target: { value: 'NewPass123!' },
+    });
 
     fireEvent.click(screen.getByRole('button', { name: /save password/i }));
 
