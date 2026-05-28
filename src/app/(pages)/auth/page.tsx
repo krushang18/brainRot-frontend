@@ -1,14 +1,23 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Badge } from 'sketchbook-ui';
-import ResetPasswordForm from '@/components/reset-password/ResetPasswordForm';
+import LoginForm from '@/components/login/LoginForm';
+import SignupForm from '@/components/signup/SignupForm';
 
-export default function ResetPasswordPage() {
+export default function AuthPage() {
+  const [isLogin, setIsLogin] = useState(true);
+
+  const handleToggle = () => {
+    setIsLogin((prev) => !prev);
+  };
+
   return (
     <div className="bg-alabaster-grey flex min-h-screen items-center justify-center p-4 md:p-8">
-      <main className="w-full max-w-xl transition-all duration-300 ease-in-out">
+      <main
+        className={`w-full transition-all duration-300 ease-in-out ${isLogin ? 'max-w-lg' : 'max-w-3xl'}`}
+      >
         <div className="mb-8 flex justify-center">
           <Link href="/" className="cursor-pointer transition-transform hover:scale-105">
             <Badge
@@ -26,7 +35,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="transition-all duration-300 ease-in-out">
-          <ResetPasswordForm />
+          {isLogin ? <LoginForm onToggle={handleToggle} /> : <SignupForm onToggle={handleToggle} />}
         </div>
       </main>
     </div>

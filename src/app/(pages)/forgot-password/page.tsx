@@ -3,9 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { Badge } from 'sketchbook-ui';
-import ResetPasswordForm from '@/components/reset-password/ResetPasswordForm';
+import ForgotPasswordForm from '@/components/forgot-password/ForgotPasswordForm';
 
-export default function ResetPasswordPage() {
+export default function ForgotPasswordPage() {
   return (
     <div className="bg-alabaster-grey flex min-h-screen items-center justify-center p-4 md:p-8">
       <main className="w-full max-w-xl transition-all duration-300 ease-in-out">
@@ -26,7 +26,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="transition-all duration-300 ease-in-out">
-          <ResetPasswordForm />
+          <ForgotPasswordForm />
         </div>
       </main>
     </div>
