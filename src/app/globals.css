@@ -1,14 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Architects+Daughter&family=Patrick+Hand&family=Outfit:wght@300..800&display=swap');
 @import 'tailwindcss';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f6f5;
+  --foreground: #1e2824;
   --alabaster-grey: #e6e8e6;
   --dust-grey: #ced0ce;
   --ash-grey: #9fb8ad;
   --granite: #475841;
   --gunmetal: #3f403f;
+  --desk-bg: #e6e8e6;
 }
 
 @theme {
@@ -19,19 +20,83 @@
   --color-ash-grey: var(--ash-grey);
   --color-granite: var(--granite);
   --color-gunmetal: var(--gunmetal);
-  --font-sans: var(--font-geist-sans);
+  --color-desk-bg: var(--desk-bg);
+  --font-sans: 'Outfit', var(--font-geist-sans), sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--desk-bg);
+  color: var(--foreground);
+  font-family: 'Outfit', sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Skeuomorphic Lined Paper Background */
+.paper-sheet-lined {
+  background-color: #fafbfc;
+  background-image: linear-gradient(rgba(147, 197, 253, 0.25) 1px, transparent 1px);
+  background-size: 100% 28px;
+  background-position: 0 4px;
+}
+
+/* Squared math grid pattern */
+.grid-pattern {
+  background-image:
+    linear-gradient(to right, rgba(71, 88, 65, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(71, 88, 65, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Custom handwritten utility fonts */
+.font-handwritten {
+  font-family: 'Caveat', cursive;
+}
+
+.font-architect {
+  font-family: 'Architects Daughter', cursive;
+}
+
+.font-patrick {
+  font-family: 'Patrick Hand', cursive;
+}
+
+.font-outfit {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Custom sketch-like borders */
+.sketch-border {
+  border: 2px solid #1e2824;
+  box-shadow: 2px 2px 0px 0px #1e2824;
+}
+
+.sketch-border-double {
+  border: 4px double #1e2824;
+}
+
+/* Sticky notes and polaroids colors */
+.bg-reminder-teal {
+  background-color: #d1e9e3;
+}
+
+/* Compact Modal Spacing Overrides */
+.compact-modal .sketch-card__content {
+  padding: 24px 24px 16px 105px !important;
+  min-height: unset !important;
+}
+
+.compact-modal .sketch-card__content form > *:not(:last-child) {
+  margin-bottom: 0.65rem !important;
+}
+
+.compact-modal .sketch-card__content h2 {
+  margin-bottom: 0.5rem !important;
+}
+
+.compact-modal .sketch-input-container {
+  width: 100% !important;
+}
+
+.compact-modal .sketch-input-container svg {
+  width: 100% !important;
 }

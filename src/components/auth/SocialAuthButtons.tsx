@@ -1,6 +1,9 @@
 import React from 'react';
 
 export default function SocialAuthButtons() {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+  const githubLoginUrl = `${apiBaseUrl}/auth/github/login`;
+
   return (
     <>
       <div className="mt-8 flex items-center justify-between">
@@ -33,7 +36,10 @@ export default function SocialAuthButtons() {
           </svg>
           Google
         </button>
-        <button className="border-dust-grey hover:bg-alabaster-grey text-gunmetal flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors">
+        <a
+          href={githubLoginUrl}
+          className="border-dust-grey hover:bg-alabaster-grey text-gunmetal flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors"
+        >
           <svg
             className="h-5 w-5"
             fill="currentColor"
@@ -47,7 +53,7 @@ export default function SocialAuthButtons() {
             />
           </svg>
           GitHub
-        </button>
+        </a>
       </div>
     </>
   );

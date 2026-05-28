@@ -8,6 +8,6 @@ describe('SocialAuthButtons', () => {
     render(<SocialAuthButtons />);
     expect(screen.getByText(/or continue with/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /google/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /github/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /github/i })).toBeInTheDocument();
   });
 });
