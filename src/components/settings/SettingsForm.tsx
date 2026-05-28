@@ -319,9 +319,9 @@ export default function SettingsForm() {
       {/* Navigation Header */}
       <header className="border-gunmetal/30 mx-auto mb-10 flex max-w-5xl items-center justify-between border-b border-dashed pb-5">
         <div className="flex items-center gap-3">
-          <span
+          <button
             onClick={() => router.push('/')}
-            className="cursor-pointer transition-transform hover:scale-105"
+            className="cursor-pointer border-none bg-transparent p-0 transition-transform hover:scale-105 focus:outline-none"
           >
             <Badge
               size="lg"
@@ -334,7 +334,7 @@ export default function SettingsForm() {
             >
               BrainRot
             </Badge>
-          </span>
+          </button>
           <span className="text-gunmetal hidden font-['Caveat',_cursive] text-2xl font-bold md:inline">
             {'// Personal Workspace'}
           </span>
