@@ -57,7 +57,7 @@ function OAuthCallbackHandler() {
 
           setStatus('success');
           // Navigate to dashboard
-          window.location.href = '/';
+          globalThis.window.location.href = '/';
         } else {
           throw new Error('Tokens not returned');
         }

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, Input, Button, Avatar, Badge } from 'sketchbook-ui';
 
@@ -32,7 +33,7 @@ export default function Home() {
 
   // Local state for notes app initialized lazily to avoid state-in-effect warning
   const [notes, setNotes] = useState<Note[]>(() => {
-    if (typeof window !== 'undefined') {
+    if (globalThis.window !== undefined) {
       const saved = localStorage.getItem('brainrot_notes');
       if (saved) {
         try {
@@ -101,7 +102,7 @@ export default function Home() {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [newContent, setNewContent] = useState('');
   const [newTagsString, setNewTagsString] = useState('');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterCategories, setFilterCategories] = useState<string[]>(['all']);
   const [selectedTab, setSelectedTab] = useState<'all' | 'favorites'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [noteError, setNoteError] = useState('');
@@ -126,7 +127,24 @@ export default function Home() {
     localStorage.setItem('brainrot_notes', JSON.stringify(updated));
   };
 
-  const handleAddNote = (e: React.FormEvent) => {
+  const toggleFilterCategory = (cat: string) => {
+    setSelectedTab('all');
+    if (cat === 'all') {
+      setFilterCategories(['all']);
+    } else {
+      setFilterCategories((prev) => {
+        const next = prev.filter((c) => c !== 'all');
+        if (next.includes(cat)) {
+          const filtered = next.filter((c) => c !== cat);
+          return filtered.length === 0 ? ['all'] : filtered;
+        } else {
+          return [...next, cat];
+        }
+      });
+    }
+  };
+
+  const handleAddNote = (e: React.SyntheticEvent) => {
     e.preventDefault();
     setNoteError('');
 
@@ -209,8 +227,8 @@ export default function Home() {
     if (selectedTab === 'favorites' && !note.isFavorite) {
       return false;
     }
-    // 2. Category Folder Filter
-    if (filterCategory !== 'all' && note.category !== filterCategory) {
+    // 2. Category Folder Filter (Multiselect)
+    if (!filterCategories.includes('all') && !filterCategories.includes(note.category)) {
       return false;
     }
     // 3. Search Filter (Title or Content)
@@ -371,7 +389,7 @@ export default function Home() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {/* Search Input using sketchbook-ui */}
-            <div className="w-64">
+            <div className="w-50">
               <Input
                 placeholder="Search notes..."
                 value={searchQuery}
@@ -400,10 +418,10 @@ export default function Home() {
             <button
               onClick={() => {
                 setSelectedTab('all');
-                setFilterCategory('all');
+                setFilterCategories(['all']);
               }}
               className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all ${
-                selectedTab === 'all' && filterCategory === 'all'
+                selectedTab === 'all' && filterCategories.includes('all')
                   ? 'text-granite bg-white shadow-sm'
                   : 'text-gunmetal/60 hover:text-gunmetal'
               }`}
@@ -413,7 +431,7 @@ export default function Home() {
             <button
               onClick={() => {
                 setSelectedTab('favorites');
-                setFilterCategory('all');
+                setFilterCategories(['all']);
               }}
               className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all ${
                 selectedTab === 'favorites'
@@ -425,29 +443,45 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Folder Categories */}
-          <div className="flex items-center gap-2">
-            <span className="text-gunmetal/60 text-sm font-semibold tracking-wider uppercase">
-              Folder:
-            </span>
-            <div className="flex flex-wrap gap-1">
-              {['all', ...NOTE_CATEGORIES].map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => {
-                    setFilterCategory(cat);
-                    setSelectedTab('all');
-                  }}
-                  className={`rounded-lg border-2 px-3 py-1 font-mono text-xs font-bold uppercase transition-all ${
-                    filterCategory === cat
-                      ? 'bg-granite border-granite text-white'
-                      : 'text-gunmetal border-dust-grey/50 hover:border-gunmetal bg-white'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+          {/* Folder Categories & Reset */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-gunmetal/60 text-sm font-semibold tracking-wider uppercase">
+                Folder:
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {['all', ...NOTE_CATEGORIES].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => toggleFilterCategory(cat)}
+                    className={`rounded-lg border-2 px-3 py-1 font-mono text-xs font-bold uppercase transition-all ${
+                      filterCategories.includes(cat)
+                        ? 'bg-granite border-granite text-white'
+                        : 'text-gunmetal border-dust-grey/50 hover:border-gunmetal bg-white'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* Clear All Filters Button */}
+            {(!filterCategories.includes('all') ||
+              searchQuery.trim() !== '' ||
+              selectedTab !== 'all') && (
+              <button
+                onClick={() => {
+                  setFilterCategories(['all']);
+                  setSearchQuery('');
+                  setSelectedTab('all');
+                }}
+                className="animate-fade-in flex cursor-pointer items-center gap-1.5 rounded-lg border border-red-300 bg-red-50/80 px-2.5 py-1.5 font-mono text-xs font-bold text-red-600 uppercase shadow-sm transition-all hover:border-red-400 hover:bg-red-100 active:scale-95"
+                title="Clear all active filters"
+              >
+                ✕ Clear Filters
+              </button>
+            )}
           </div>
         </div>
 
@@ -534,9 +568,12 @@ export default function Home() {
                     {/* Note Image (Optional) */}
                     {note.imageUrl && (
                       <div className="border-dust-grey/30 bg-alabaster-grey/25 mb-3 w-full overflow-hidden rounded-lg border p-1 select-none">
-                        <img
+                        <Image
                           src={note.imageUrl}
                           alt={note.title}
+                          width={500}
+                          height={300}
+                          unoptimized
                           className="h-auto max-h-48 w-full rounded object-cover"
                         />
                       </div>
@@ -550,15 +587,16 @@ export default function Home() {
                     >
                       {note.content.includes('~~')
                         ? note.content.split('\n').map((line, i) => {
+                            const lineKey = `${note.id}-line-${i}-${line}`;
                             if (line.startsWith('~~') && line.endsWith('~~')) {
                               return (
-                                <span key={i} className="text-gunmetal/40 block line-through">
+                                <span key={lineKey} className="text-gunmetal/40 block line-through">
                                   {line.replaceAll('~~', '')}
                                 </span>
                               );
                             }
                             return (
-                              <span key={i} className="block">
+                              <span key={lineKey} className="block">
                                 {line}
                               </span>
                             );
@@ -571,15 +609,14 @@ export default function Home() {
                   <div className="border-gunmetal/15 mt-4 flex items-center justify-between border-t border-dashed pt-3">
                     {/* Tags */}
                     <div className="flex flex-wrap gap-1.5">
-                      {note.tags &&
-                        note.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="bg-ash-grey/20 text-granite rounded px-2 py-0.5 font-mono text-[9px] font-bold tracking-wider uppercase"
-                          >
-                            #{tag}
-                          </span>
-                        ))}
+                      {note.tags?.map((tag) => (
+                        <span
+                          key={tag}
+                          className="bg-ash-grey/20 text-granite rounded px-2 py-0.5 font-mono text-[9px] font-bold tracking-wider uppercase"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
                       {!note.tags && (
                         <span className="text-gunmetal/40 font-mono text-[9px] font-bold tracking-wider uppercase">
                           {note.category}
@@ -603,18 +640,23 @@ export default function Home() {
       </main>
 
       {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-          onClick={() => {
-            setIsModalOpen(false);
-            setNoteError('');
-          }}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop button */}
+          <button
+            type="button"
+            className="fixed inset-0 h-full w-full cursor-pointer border-none bg-black/50 backdrop-blur-sm"
+            onClick={() => {
+              setIsModalOpen(false);
+              setNoteError('');
+            }}
+            aria-label="Close modal"
+          />
+
+          {/* Modal Content Card */}
           <Card
             variant="notebook"
-            className="compact-modal relative w-full"
+            className="compact-modal relative z-10 w-full"
             style={{ maxWidth: '850px', width: '100%', minHeight: '580px' }}
-            onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
             <button
@@ -622,6 +664,7 @@ export default function Home() {
                 setIsModalOpen(false);
                 setNoteError('');
               }}
+              aria-label="Close note modal"
               className="text-gunmetal absolute top-3.5 right-3.5 cursor-pointer transition-transform hover:scale-110"
             >
               <svg
@@ -647,8 +690,14 @@ export default function Home() {
 
             <form onSubmit={handleAddNote} className="space-y-5">
               <div>
-                <label className="text-gunmetal mb-1 ml-1 block text-lg font-semibold">Title</label>
+                <label
+                  htmlFor="note-title"
+                  className="text-gunmetal mb-1 ml-1 block text-lg font-semibold"
+                >
+                  Title
+                </label>
                 <Input
+                  id="note-title"
                   type="text"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
@@ -659,9 +708,9 @@ export default function Home() {
               </div>
 
               <div>
-                <label className="text-gunmetal mb-1 ml-1 block text-lg font-semibold">
+                <span className="text-gunmetal mb-1 ml-1 block text-lg font-semibold">
                   Category & Folder
-                </label>
+                </span>
                 <div className="grid grid-cols-6 gap-2">
                   {NOTE_CATEGORIES.map((cat) => {
                     const active = newCategory === cat;
@@ -684,10 +733,14 @@ export default function Home() {
               </div>
 
               <div>
-                <label className="text-gunmetal mb-1 ml-1 block text-lg font-semibold">
+                <label
+                  htmlFor="note-tags"
+                  className="text-gunmetal mb-1 ml-1 block text-lg font-semibold"
+                >
                   Tags (Comma separated)
                 </label>
                 <Input
+                  id="note-tags"
                   type="text"
                   value={newTagsString}
                   onChange={(e) => setNewTagsString(e.target.value)}
@@ -698,10 +751,14 @@ export default function Home() {
               </div>
 
               <div>
-                <label className="text-gunmetal mb-1 ml-1 block text-lg font-semibold">
+                <label
+                  htmlFor="note-image"
+                  className="text-gunmetal mb-1 ml-1 block text-lg font-semibold"
+                >
                   Image URL (Optional)
                 </label>
                 <Input
+                  id="note-image"
                   type="text"
                   value={newImageUrl}
                   onChange={(e) => setNewImageUrl(e.target.value)}
@@ -712,10 +769,14 @@ export default function Home() {
               </div>
 
               <div>
-                <label className="text-gunmetal mb-1 ml-1 block text-lg font-semibold">
+                <label
+                  htmlFor="note-content"
+                  className="text-gunmetal mb-1 ml-1 block text-lg font-semibold"
+                >
                   Scribble Content
                 </label>
                 <textarea
+                  id="note-content"
                   value={newContent}
                   onChange={(e) => setNewContent(e.target.value)}
                   placeholder="Type your thoughts here..."
