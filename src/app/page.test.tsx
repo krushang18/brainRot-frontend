@@ -225,13 +225,18 @@ describe('Home Page (Notes Dashboard)', () => {
     expect(screen.queryByLabelText(/title/i)).not.toBeInTheDocument();
   });
 
-  it('navigates to settings on avatar click and handles logout click', async () => {
+  it('navigates to settings on avatar click, logo click, and handles logout click', async () => {
     render(<Home />);
 
     // Click Avatar to navigate to settings (covers line 363)
     const avatarBtn = screen.getByLabelText('Avatar');
     fireEvent.click(avatarBtn);
     expect(mockPush).toHaveBeenCalledWith('/settings');
+
+    // Click authenticated Logo to navigate to / and reset search/filters
+    const logoBtn = screen.getAllByText('BrainRot')[0];
+    fireEvent.click(logoBtn);
+    expect(mockPush).toHaveBeenCalledWith('/');
 
     // Click Logout button (covers lines 210-211)
     const logoutBtn = screen.getByRole('button', { name: /log out/i });

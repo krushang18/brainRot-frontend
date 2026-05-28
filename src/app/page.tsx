@@ -260,17 +260,22 @@ export default function Home() {
       <div className="bg-alabaster-grey flex min-h-screen items-center justify-center p-4 md:p-8">
         <main className="w-full max-w-2xl">
           <div className="mb-8 flex justify-center">
-            <Badge
-              size="lg"
-              colors={{ bg: 'var(--granite)', text: '#fff', stroke: '#000' }}
-              typography={{
-                fontSize: '1.25rem',
-                fontWeight: 'bold',
-                fontFamily: 'Caveat, cursive',
-              }}
+            <span
+              onClick={() => router.push('/')}
+              className="cursor-pointer transition-transform hover:scale-105"
             >
-              BrainRot
-            </Badge>
+              <Badge
+                size="lg"
+                colors={{ bg: 'var(--granite)', text: '#fff', stroke: '#000' }}
+                typography={{
+                  fontSize: '1.25rem',
+                  fontWeight: 'bold',
+                  fontFamily: 'Caveat, cursive',
+                }}
+              >
+                BrainRot
+              </Badge>
+            </span>
           </div>
 
           <Card
@@ -332,13 +337,27 @@ export default function Home() {
       {/* Navigation Header - Matches SettingsForm exactly */}
       <header className="border-gunmetal/30 mx-auto mb-10 flex max-w-5xl items-center justify-between border-b border-dashed pb-5">
         <div className="flex items-center gap-3">
-          <Badge
-            size="lg"
-            colors={{ bg: 'var(--granite)', text: '#fff', stroke: '#000' }}
-            typography={{ fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'Caveat, cursive' }}
+          <span
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedTab('all');
+              setFilterCategories(['all']);
+              router.push('/');
+            }}
+            className="cursor-pointer transition-transform hover:scale-105"
           >
-            BrainRot
-          </Badge>
+            <Badge
+              size="lg"
+              colors={{ bg: 'var(--granite)', text: '#fff', stroke: '#000' }}
+              typography={{
+                fontSize: '1.25rem',
+                fontWeight: 'bold',
+                fontFamily: 'Caveat, cursive',
+              }}
+            >
+              BrainRot
+            </Badge>
+          </span>
           <span className="text-gunmetal hidden font-['Caveat',_cursive] text-2xl font-bold md:inline">
             {'// Personal Workspace'}
           </span>
