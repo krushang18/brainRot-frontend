@@ -5,10 +5,20 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, Input, Button, Avatar, Badge } from 'sketchbook-ui';
 
+export const NOTE_CATEGORIES = [
+  'genius',
+  'high-rot',
+  'yaps',
+  'serious',
+  'reminder',
+  'general',
+] as const;
+export type NoteCategory = (typeof NOTE_CATEGORIES)[number];
+
 interface Note {
   id: string;
   title: string;
-  category: 'genius' | 'high-rot' | 'yaps' | 'serious' | 'reminder';
+  category: NoteCategory;
   content: string;
   createdAt: string;
   tags?: string[];
@@ -87,9 +97,8 @@ export default function Home() {
   });
 
   const [newTitle, setNewTitle] = useState('');
-  const [newCategory, setNewCategory] = useState<
-    'genius' | 'high-rot' | 'yaps' | 'serious' | 'reminder'
-  >('yaps');
+  const [newCategory, setNewCategory] = useState<NoteCategory>('yaps');
+  const [newImageUrl, setNewImageUrl] = useState('');
   const [newContent, setNewContent] = useState('');
   const [newTagsString, setNewTagsString] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -97,6 +106,19 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [noteError, setNoteError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Dynamic DOM effect to allow sketchbook-ui inputs to stretch to full width
+  React.useEffect(() => {
+    if (isModalOpen) {
+      const timer = setTimeout(() => {
+        const svgs = document.querySelectorAll('.sketch-input svg');
+        svgs.forEach((svg) => {
+          svg.setAttribute('preserveAspectRatio', 'none');
+        });
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isModalOpen]);
 
   // Save notes helper
   const saveNotes = (updated: Note[]) => {
@@ -130,6 +152,7 @@ export default function Home() {
       category: newCategory,
       content: newContent.trim(),
       tags,
+      imageUrl: newImageUrl.trim() || undefined,
       createdAt: new Date().toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -143,6 +166,7 @@ export default function Home() {
 
     // Reset state
     setNewTitle('');
+    setNewImageUrl('');
     setNewContent('');
     setNewTagsString('');
     setNewCategory('yaps');
@@ -407,7 +431,7 @@ export default function Home() {
               Folder:
             </span>
             <div className="flex flex-wrap gap-1">
-              {['all', 'genius', 'high-rot', 'yaps', 'serious', 'reminder'].map((cat) => (
+              {['all', ...NOTE_CATEGORIES].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => {
@@ -589,7 +613,7 @@ export default function Home() {
           <Card
             variant="notebook"
             className="compact-modal relative w-full"
-            style={{ maxWidth: '720px', width: '100%', minHeight: 'unset' }}
+            style={{ maxWidth: '850px', width: '100%', minHeight: '580px' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
@@ -611,44 +635,42 @@ export default function Home() {
               </svg>
             </button>
 
-            <h2 className="text-granite mb-2 font-['Caveat',_cursive] text-3xl font-bold">
+            <h2 className="text-granite mb-4 font-['Caveat',_cursive] text-4xl font-bold">
               Scribble a Note
             </h2>
 
             {noteError && (
-              <div className="mb-3 rounded border border-red-200 bg-red-50 p-2 text-xs font-semibold text-red-600">
+              <div className="animate-shake mb-6 rounded-lg border-2 border-red-300 bg-red-50 p-4 text-center text-lg font-bold text-red-600 shadow-sm">
                 ⚠️ {noteError}
               </div>
             )}
 
-            <form onSubmit={handleAddNote} className="space-y-2.5">
+            <form onSubmit={handleAddNote} className="space-y-5">
               <div>
-                <label className="text-gunmetal mb-0.5 block text-[11px] font-semibold">
-                  Title
-                </label>
+                <label className="text-gunmetal mb-1 ml-1 block text-lg font-semibold">Title</label>
                 <Input
                   type="text"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="e.g. Project Ideas for 2024"
                   className="w-full"
-                  size="sm"
+                  size="lg"
                 />
               </div>
 
               <div>
-                <label className="text-gunmetal mb-0.5 block text-[11px] font-semibold">
+                <label className="text-gunmetal mb-1 ml-1 block text-lg font-semibold">
                   Category & Folder
                 </label>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {(['genius', 'yaps', 'high-rot', 'serious', 'reminder'] as const).map((cat) => {
+                <div className="grid grid-cols-6 gap-2">
+                  {NOTE_CATEGORIES.map((cat) => {
                     const active = newCategory === cat;
                     return (
                       <button
                         key={cat}
                         type="button"
                         onClick={() => setNewCategory(cat)}
-                        className={`cursor-pointer rounded-lg border px-0.5 py-0.5 font-mono text-[9px] font-bold tracking-wide uppercase transition-all ${
+                        className={`cursor-pointer rounded-lg border px-3.5 py-2 font-mono text-xs font-bold tracking-wide uppercase transition-all ${
                           active
                             ? 'bg-granite border-granite text-white'
                             : 'text-gunmetal border-dust-grey bg-white hover:bg-slate-50'
@@ -662,7 +684,7 @@ export default function Home() {
               </div>
 
               <div>
-                <label className="text-gunmetal mb-0.5 block text-[11px] font-semibold">
+                <label className="text-gunmetal mb-1 ml-1 block text-lg font-semibold">
                   Tags (Comma separated)
                 </label>
                 <Input
@@ -671,24 +693,38 @@ export default function Home() {
                   onChange={(e) => setNewTagsString(e.target.value)}
                   placeholder="e.g. future, creative"
                   className="w-full"
-                  size="sm"
+                  size="lg"
                 />
               </div>
 
               <div>
-                <label className="text-gunmetal mb-0.5 block text-[11px] font-semibold">
+                <label className="text-gunmetal mb-1 ml-1 block text-lg font-semibold">
+                  Image URL (Optional)
+                </label>
+                <Input
+                  type="text"
+                  value={newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
+                  placeholder="e.g. /cafe_sketches.png or https://example.com/image.png"
+                  className="w-full"
+                  size="lg"
+                />
+              </div>
+
+              <div>
+                <label className="text-gunmetal mb-1 ml-1 block text-lg font-semibold">
                   Scribble Content
                 </label>
                 <textarea
                   value={newContent}
                   onChange={(e) => setNewContent(e.target.value)}
                   placeholder="Type your thoughts here..."
-                  rows={3}
-                  className="border-dust-grey focus:border-granite w-full rounded-lg border bg-white p-2.5 font-['Patrick_Hand',_cursive] text-base shadow-sm select-text focus:outline-none"
+                  rows={6}
+                  className="border-dust-grey focus:border-granite w-full rounded-lg border bg-white p-3.5 font-['Patrick_Hand',_cursive] text-lg shadow-sm select-text focus:outline-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-2.5 pt-1.5 select-none">
+              <div className="flex justify-end gap-3 pt-3 select-none">
                 <Button
                   type="button"
                   onClick={() => {
@@ -696,14 +732,13 @@ export default function Home() {
                     setNoteError('');
                   }}
                   colors={{ bg: '#fff', text: 'var(--granite)', stroke: 'var(--granite)' }}
-                  className="text-xs hover:bg-slate-50"
+                  className="hover:bg-slate-50"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   colors={{ bg: 'var(--granite)', text: '#fff', stroke: '#000' }}
-                  className="text-xs"
                 >
                   Pin Note
                 </Button>

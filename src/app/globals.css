@@ -81,22 +81,14 @@ body {
 
 /* Compact Modal Spacing Overrides */
 .compact-modal .sketch-card__content {
-  padding: 24px 24px 16px 105px !important;
-  min-height: unset !important;
+  padding: 32px 32px 24px 145px !important;
+  min-height: 580px !important;
 }
 
-.compact-modal .sketch-card__content form > *:not(:last-child) {
-  margin-bottom: 0.65rem !important;
-}
-
-.compact-modal .sketch-card__content h2 {
-  margin-bottom: 0.5rem !important;
-}
-
-.compact-modal .sketch-input-container {
+.compact-modal .sketch-input {
   width: 100% !important;
 }
 
-.compact-modal .sketch-input-container svg {
+.compact-modal .sketch-input svg {
   width: 100% !important;
 }
