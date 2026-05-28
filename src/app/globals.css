@@ -21,14 +21,14 @@
   --color-granite: var(--granite);
   --color-gunmetal: var(--gunmetal);
   --color-desk-bg: var(--desk-bg);
-  --font-sans: 'Outfit', var(--font-geist-sans), sans-serif;
+  --font-sans: 'Patrick Hand', cursive, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--desk-bg);
   color: var(--foreground);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Patrick Hand', cursive;
 }
 
 /* Skeuomorphic Lined Paper Background */
