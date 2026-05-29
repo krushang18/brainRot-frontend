@@ -640,35 +640,6 @@ export default function Home() {
                       {note.title}
                     </h3>
 
-                    {/* Note Image (Optional) */}
-                    {(() => {
-                      const imgs =
-                        note.imageUrls && note.imageUrls.length > 0
-                          ? note.imageUrls
-                          : note.imageUrl
-                            ? [note.imageUrl]
-                            : [];
-                      if (imgs.length === 0) return null;
-                      const coverImg = imgs[0];
-                      return (
-                        <div className="border-dust-grey/30 bg-alabaster-grey/25 relative mb-3 w-full overflow-hidden rounded-lg border p-1 select-none">
-                          <Image
-                            src={coverImg}
-                            alt={note.title}
-                            width={500}
-                            height={300}
-                            unoptimized
-                            className="h-auto max-h-48 w-full rounded object-cover"
-                          />
-                          {imgs.length > 1 && (
-                            <div className="absolute top-2.5 right-2.5 flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 font-mono text-[10px] font-bold text-white shadow">
-                              📷 {imgs.length}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })()}
-
                     {/* Note Content */}
                     <p
                       className={`text-gunmetal/90 font-['Patrick_Hand',_cursive] text-lg leading-relaxed whitespace-pre-wrap ${
@@ -706,34 +677,54 @@ export default function Home() {
                   </div>
 
                   {/* Note Footer: Tags and Actions */}
-                  <div className="border-gunmetal/15 mt-4 flex items-center justify-between border-t border-dashed pt-3">
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {note.tags?.map((tag) => (
-                        <span
-                          key={tag}
-                          className="bg-ash-grey/20 text-granite rounded px-2 py-0.5 font-mono text-[9px] font-bold tracking-wider uppercase"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                      {!note.tags && (
-                        <span className="text-gunmetal/40 font-mono text-[9px] font-bold tracking-wider uppercase">
-                          {note.category}
-                        </span>
-                      )}
+                  <div className="border-gunmetal/15 mt-4 flex items-center border-t border-dashed pt-2.5">
+                    {/* Folder/Category Badge */}
+                    <div className="flex items-center gap-2">
+                      <span className="bg-ash-grey/15 border-gunmetal/15 text-gunmetal/90 flex h-6 items-center gap-1 rounded border px-2 py-0.5 font-mono text-[9px] font-bold uppercase select-none">
+                        {note.category}
+                      </span>
+                      {(() => {
+                        const imgs =
+                          note.imageUrls && note.imageUrls.length > 0
+                            ? note.imageUrls
+                            : note.imageUrl
+                              ? [note.imageUrl]
+                              : [];
+                        if (imgs.length > 0) {
+                          return (
+                            <span
+                              data-testid="image-count-badge"
+                              className="bg-ash-grey/15 border-gunmetal/15 text-gunmetal/90 flex h-6 items-center gap-1 rounded border px-2 py-0.5 font-mono text-[9px] font-bold select-none"
+                            >
+                              <svg
+                                className="text-gunmetal/75 h-3 w-3"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2.2}
+                              >
+                                {/* Hand-drawn crooked camera frame */}
+                                <path
+                                  d="M3.5 8.5c0-.8.6-1.5 1.5-1.5h3.2c.4 0 .8-.2 1-.5l1.3-2.2c.3-.5.8-.8 1.4-.8h4.2c.6 0 1.1.3 1.4.8l1.3 2.2c.2.3.6.5 1 .5h3.2c.9 0 1.5.7 1.5 1.5v9c0 .9-.6 1.5-1.5 1.5H5c-.9 0-1.5-.6-1.5-1.5z"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                {/* Crooked lens circle */}
+                                <path
+                                  d="M16 13a4 4 0 11-8 0 4 4 0 018 0z"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                {/* Small flash light dot */}
+                                <circle cx="17.5" cy="9.5" r="0.75" fill="currentColor" />
+                              </svg>
+                              {imgs.length}
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
-
-                    {/* Delete Note Action */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteNote(note.id);
-                      }}
-                      className="cursor-pointer font-mono text-[10px] font-bold tracking-wider text-red-600 uppercase transition-colors hover:text-red-800"
-                    >
-                      Delete
-                    </button>
                   </div>
                 </Card>
               );
@@ -1178,7 +1169,7 @@ export default function Home() {
                       {/* Left: Category Badge & Created At Date beside it */}
                       <div className="flex flex-wrap items-center gap-3">
                         <span className="bg-granite rounded-lg px-3 py-1 font-mono text-xs font-bold tracking-wide text-white uppercase">
-                          📁 {selectedNote.category}
+                          {selectedNote.category}
                         </span>
                         <span className="text-granite/70 font-mono text-xs font-bold tracking-wider uppercase">
                           Created: {selectedNote.createdAt}
