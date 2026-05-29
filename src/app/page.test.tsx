@@ -79,9 +79,10 @@ describe('Home Page (Notes Dashboard)', () => {
     expect(screen.getByText('Project Ideas for 2024')).toBeInTheDocument();
     expect(screen.getByText('Cafe Sketches')).toBeInTheDocument();
 
-    // Verify image renders for Cafe Sketches (covers dynamic imageUrl rendering branches)
-    const imageEl = screen.getByAltText('Cafe Sketches');
-    expect(imageEl).toBeInTheDocument();
+    // Verify image count indicator renders for Cafe Sketches, but no image is shown on dashboard
+    const badge = screen.getByTestId('image-count-badge');
+    expect(badge).toBeInTheDocument();
+    expect(badge.textContent).toBe('1');
   });
 
   it('filters notes by search query', () => {
@@ -138,14 +139,19 @@ describe('Home Page (Notes Dashboard)', () => {
   it('deletes a note', () => {
     render(<Home />);
 
-    const initialNoteCount = screen.getAllByText('Delete').length;
+    // Verify the note exists initially
+    expect(screen.getByText('Project Ideas for 2024')).toBeInTheDocument();
 
-    // Find the delete button on the first note card
-    const deleteButton = screen.getAllByText('Delete')[0];
+    // Click on the note card to open the Detail Modal
+    const noteCard = screen.getByText('Project Ideas for 2024');
+    fireEvent.click(noteCard);
+
+    // Find and click the delete button in the detail modal
+    const deleteButton = screen.getByTitle('Delete Note');
     fireEvent.click(deleteButton);
 
-    const newNoteCount = screen.getAllByText('Delete').length;
-    expect(newNoteCount).toBe(initialNoteCount - 1);
+    // Verify the note is deleted and no longer visible on the dashboard
+    expect(screen.queryByText('Project Ideas for 2024')).not.toBeInTheDocument();
   });
 
   it('opens new note modal and creates a note successfully', () => {
