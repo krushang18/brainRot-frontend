@@ -24,6 +24,7 @@ interface Note {
   createdAt: string;
   tags?: string[];
   imageUrl?: string;
+  imageUrls?: string[];
   isFavorite?: boolean;
 }
 
@@ -61,7 +62,7 @@ export default function Home() {
           category: 'yaps',
           content: 'The barista looked like a wizard today. Note: try more cross-hatching.',
           createdAt: 'Oct 22, 2023',
-          imageUrl: '/cafe_sketches.png',
+          imageUrls: ['/cafe_sketches.png'],
           isFavorite: false,
         },
         {
@@ -100,6 +101,8 @@ export default function Home() {
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState<NoteCategory>('yaps');
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [newImageUrls, setNewImageUrls] = useState<string[]>([]);
+  const [tempImageUrl, setTempImageUrl] = useState('');
   const [newContent, setNewContent] = useState('');
   const [newTagsString, setNewTagsString] = useState('');
   const [filterCategories, setFilterCategories] = useState<string[]>(['all']);
@@ -107,6 +110,46 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [noteError, setNoteError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // States for detailed flippable modal (Flow 2)
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+
+  const handleCardClick = (note: Note) => {
+    setSelectedNote(note);
+    setNewTitle(note.title);
+    setNewCategory(note.category);
+
+    // Load existing image(s) to multiple images state
+    if (note.imageUrls && note.imageUrls.length > 0) {
+      setNewImageUrls(note.imageUrls);
+    } else if (note.imageUrl) {
+      setNewImageUrls([note.imageUrl]);
+    } else {
+      setNewImageUrls([]);
+    }
+    setNewImageUrl('');
+    setTempImageUrl('');
+
+    setNewContent(note.content);
+    setNewTagsString(note.tags ? note.tags.join(', ') : '');
+    setIsFlipped(false);
+    setIsDetailModalOpen(true);
+  };
+
+  // Prevent body scroll when modals are open
+  React.useEffect(() => {
+    if (isDetailModalOpen || isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isDetailModalOpen, isModalOpen]);
 
   // Dynamic DOM effect to allow sketchbook-ui inputs to stretch to full width
   React.useEffect(() => {
@@ -170,7 +213,7 @@ export default function Home() {
       category: newCategory,
       content: newContent.trim(),
       tags,
-      imageUrl: newImageUrl.trim() || undefined,
+      imageUrls: newImageUrls.filter(Boolean),
       createdAt: new Date().toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -185,6 +228,8 @@ export default function Home() {
     // Reset state
     setNewTitle('');
     setNewImageUrl('');
+    setNewImageUrls([]);
+    setTempImageUrl('');
     setNewContent('');
     setNewTagsString('');
     setNewCategory('yaps');
@@ -418,7 +463,17 @@ export default function Home() {
             </div>
             {/* New Note Button using sketchbook-ui */}
             <Button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                setNewTitle('');
+                setNewCategory('yaps');
+                setNewImageUrl('');
+                setNewImageUrls([]);
+                setTempImageUrl('');
+                setNewContent('');
+                setNewTagsString('');
+                setNoteError('');
+                setIsModalOpen(true);
+              }}
               colors={{
                 bg: 'var(--granite)',
                 stroke: '#000',
@@ -544,9 +599,10 @@ export default function Home() {
                 <Card
                   key={note.id}
                   variant="notebook"
-                  className={`flex flex-col justify-between bg-white p-6 shadow-md transition-all duration-250 hover:-translate-y-1.5 hover:scale-[1.015] hover:rotate-0 hover:shadow-xl ${sizeClass} ${rotClass} ${
+                  className={`flex cursor-pointer flex-col justify-between bg-white p-6 shadow-md transition-all duration-250 hover:-translate-y-1.5 hover:scale-[1.015] hover:rotate-0 hover:shadow-xl ${sizeClass} ${rotClass} ${
                     note.title.toLowerCase().includes('minimalism') ? 'md:col-span-2' : ''
                   }`}
+                  onClick={() => handleCardClick(note)}
                 >
                   <div>
                     {/* Note Date and Favorite Star */}
@@ -585,18 +641,33 @@ export default function Home() {
                     </h3>
 
                     {/* Note Image (Optional) */}
-                    {note.imageUrl && (
-                      <div className="border-dust-grey/30 bg-alabaster-grey/25 mb-3 w-full overflow-hidden rounded-lg border p-1 select-none">
-                        <Image
-                          src={note.imageUrl}
-                          alt={note.title}
-                          width={500}
-                          height={300}
-                          unoptimized
-                          className="h-auto max-h-48 w-full rounded object-cover"
-                        />
-                      </div>
-                    )}
+                    {(() => {
+                      const imgs =
+                        note.imageUrls && note.imageUrls.length > 0
+                          ? note.imageUrls
+                          : note.imageUrl
+                            ? [note.imageUrl]
+                            : [];
+                      if (imgs.length === 0) return null;
+                      const coverImg = imgs[0];
+                      return (
+                        <div className="border-dust-grey/30 bg-alabaster-grey/25 relative mb-3 w-full overflow-hidden rounded-lg border p-1 select-none">
+                          <Image
+                            src={coverImg}
+                            alt={note.title}
+                            width={500}
+                            height={300}
+                            unoptimized
+                            className="h-auto max-h-48 w-full rounded object-cover"
+                          />
+                          {imgs.length > 1 && (
+                            <div className="absolute top-2.5 right-2.5 flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 font-mono text-[10px] font-bold text-white shadow">
+                              📷 {imgs.length}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
 
                     {/* Note Content */}
                     <p
@@ -604,23 +675,33 @@ export default function Home() {
                         note.category === 'reminder' ? 'text-teal-850 italic' : ''
                       }`}
                     >
-                      {note.content.includes('~~')
-                        ? note.content.split('\n').map((line, i) => {
-                            const lineKey = `${note.id}-line-${i}-${line}`;
-                            if (line.startsWith('~~') && line.endsWith('~~')) {
+                      {(() => {
+                        const maxChars = 150;
+                        const isLong = note.content.length > maxChars;
+                        const textToRender = isLong
+                          ? note.content.slice(0, maxChars) + '...'
+                          : note.content;
+                        return textToRender.includes('~~')
+                          ? textToRender.split('\n').map((line, i) => {
+                              const lineKey = `${note.id}-line-${i}-${line}`;
+                              if (line.startsWith('~~') && line.endsWith('~~')) {
+                                return (
+                                  <span
+                                    key={lineKey}
+                                    className="text-gunmetal/40 block line-through"
+                                  >
+                                    {line.replaceAll('~~', '')}
+                                  </span>
+                                );
+                              }
                               return (
-                                <span key={lineKey} className="text-gunmetal/40 block line-through">
-                                  {line.replaceAll('~~', '')}
+                                <span key={lineKey} className="block">
+                                  {line}
                                 </span>
                               );
-                            }
-                            return (
-                              <span key={lineKey} className="block">
-                                {line}
-                              </span>
-                            );
-                          })
-                        : note.content}
+                            })
+                          : textToRender;
+                      })()}
                     </p>
                   </div>
 
@@ -645,7 +726,10 @@ export default function Home() {
 
                     {/* Delete Note Action */}
                     <button
-                      onClick={() => handleDeleteNote(note.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteNote(note.id);
+                      }}
                       className="cursor-pointer font-mono text-[10px] font-bold tracking-wider text-red-600 uppercase transition-colors hover:text-red-800"
                     >
                       Delete
@@ -675,7 +759,7 @@ export default function Home() {
           <Card
             variant="notebook"
             className="compact-modal relative z-10 w-full"
-            style={{ maxWidth: '850px', width: '100%', minHeight: '580px' }}
+            style={{ maxWidth: '850px', width: '100%', minHeight: '670px', height: '670px' }}
           >
             {/* Close button */}
             <button
@@ -684,7 +768,884 @@ export default function Home() {
                 setNoteError('');
               }}
               aria-label="Close note modal"
-              className="text-gunmetal absolute top-3.5 right-3.5 cursor-pointer transition-transform hover:scale-110"
+              className="text-gunmetal absolute top-4 right-4 z-20 cursor-pointer transition-transform hover:scale-110"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <h2 className="text-granite mb-2 font-['Caveat',_cursive] text-4xl font-bold select-none">
+              Scribble a Note
+            </h2>
+
+            {noteError && (
+              <div className="animate-shake text-md mb-4 rounded-lg border-2 border-red-300 bg-red-50 p-2.5 text-center font-bold text-red-600 shadow-sm select-none">
+                ⚠️ {noteError}
+              </div>
+            )}
+
+            <form onSubmit={handleAddNote} className="flex w-full flex-1 flex-col justify-between">
+              {/* SCROLLABLE FIELDS CONTAINER */}
+              <div className="max-h-[520px] w-full flex-1 scrollbar-thin space-y-4 overflow-y-auto pr-1.5">
+                <div>
+                  <label
+                    htmlFor="note-title"
+                    className="text-gunmetal text-md mb-0.5 ml-1 block font-semibold"
+                  >
+                    Title
+                  </label>
+                  <Input
+                    id="note-title"
+                    type="text"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    placeholder="e.g. Project Ideas for 2024"
+                    className="w-full"
+                    size="md"
+                  />
+                </div>
+
+                <div>
+                  <span className="text-gunmetal text-md mb-1 ml-1 block font-semibold">
+                    Category & Folder
+                  </span>
+                  <div className="grid grid-cols-6 gap-2">
+                    {NOTE_CATEGORIES.map((cat) => {
+                      const active = newCategory === cat;
+                      return (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => setNewCategory(cat)}
+                          className={`cursor-pointer rounded-lg border px-2 py-1.5 font-mono text-[10px] font-bold tracking-wide uppercase transition-all ${
+                            active
+                              ? 'bg-granite border-granite text-white'
+                              : 'text-gunmetal border-dust-grey bg-white hover:bg-slate-50'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Tags Field */}
+                <div>
+                  <label
+                    htmlFor="note-tags"
+                    className="text-gunmetal text-md mb-0.5 ml-1 block font-semibold"
+                  >
+                    Tags (Comma separated)
+                  </label>
+                  <Input
+                    id="note-tags"
+                    type="text"
+                    value={newTagsString}
+                    onChange={(e) => setNewTagsString(e.target.value)}
+                    placeholder="e.g. future, creative"
+                    className="w-full"
+                    size="md"
+                  />
+                </div>
+
+                {/* Multi-Image Polaroid Deck Manager */}
+                <div className="border-gunmetal/10 space-y-2.5 rounded-xl border bg-[#FAF8F5]/30 p-3">
+                  <div className="flex items-center justify-between select-none">
+                    <span className="text-gunmetal text-md ml-1 block font-semibold">
+                      Polaroid Snapshots ({newImageUrls.length}/5)
+                    </span>
+                    {newImageUrls.length >= 5 && (
+                      <span className="font-mono text-xs font-bold tracking-wider text-emerald-700 uppercase">
+                        ✓ Max Images Reached
+                      </span>
+                    )}
+                  </div>
+
+                  {/* List of mini Polaroids */}
+                  {newImageUrls.length > 0 && (
+                    <div className="flex max-w-full scrollbar-thin gap-3 overflow-x-auto px-1.5 pt-1 pb-4 select-none">
+                      {newImageUrls.map((url, idx) => {
+                        const rotations = [
+                          'rotate-[-2deg]',
+                          'rotate-[1deg]',
+                          'rotate-[-1.5deg]',
+                          'rotate-[2deg]',
+                        ];
+                        const rotation = rotations[idx % rotations.length];
+                        return (
+                          <div
+                            key={url + '-' + idx}
+                            className={`group border-dust-grey/40 relative flex-shrink-0 bg-white p-2 shadow-sm ${rotation} w-[95px] border transition-all duration-300 hover:scale-105 hover:rotate-0`}
+                          >
+                            <div className="bg-alabaster-grey/10 relative aspect-square w-full overflow-hidden rounded">
+                              <img
+                                src={url}
+                                alt={`Polaroid ${idx + 1}`}
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src =
+                                    'https://placehold.co/100x100?text=Invalid';
+                                }}
+                              />
+                              {/* Sketchy Center Delete Overlay (No red color, hand-drawn/scribbled trash SVG) */}
+                              <div className="absolute inset-0 flex items-center justify-center rounded bg-[#FAF8F5]/85 opacity-0 backdrop-blur-[1.5px] transition-all duration-200 select-none group-hover:opacity-100">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setNewImageUrls(newImageUrls.filter((_, i) => i !== idx));
+                                  }}
+                                  className="text-gunmetal flex cursor-pointer items-center justify-center rounded-full bg-[#FAF8F5] p-2 shadow-md transition-all duration-200 hover:scale-110 hover:bg-white active:scale-90"
+                                  title="Delete Image"
+                                >
+                                  <svg
+                                    className="text-gunmetal/90 h-5.5 w-5.5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={2.2}
+                                  >
+                                    {/* Crooked Lid */}
+                                    <path d="M3.5 6.5h16.8" strokeLinecap="round" />
+                                    {/* Crooked Lid Handle */}
+                                    <path
+                                      d="M9.2 6.5v-2.2c0-.4.3-.8.8-.8h3.8c.4 0 .8.4.8.8v2.2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                    {/* Crooked Body */}
+                                    <path
+                                      d="M18.3 6.8l-1.1 12.4c-.1 1-.9 1.8-1.9 1.8H8.5c-1 0-1.8-.8-1.9-1.8L5.5 6.8"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                    {/* Crooked Stripes */}
+                                    <path d="M10.2 10.5v6.5 M13.8 10.5v6.5" strokeLinecap="round" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                            <div className="pt-1.5 text-center">
+                              <p className="text-gunmetal/60 font-['Caveat',_cursive] text-[10px] leading-none font-bold">
+                                Photo {idx + 1}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Input field to add a new URL (shown only if < 5 images exist) */}
+                  {newImageUrls.length < 5 && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <label htmlFor="note-image-url" className="sr-only">
+                        Image URL
+                      </label>
+                      <Input
+                        id="note-image-url"
+                        type="text"
+                        value={tempImageUrl}
+                        onChange={(e) => setTempImageUrl(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (tempImageUrl.trim()) {
+                              setNewImageUrls([...newImageUrls, tempImageUrl.trim()]);
+                              setTempImageUrl('');
+                            }
+                          }
+                        }}
+                        placeholder="Paste a photo URL and click Add"
+                        className="flex-1"
+                        size="md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (tempImageUrl.trim()) {
+                            setNewImageUrls([...newImageUrls, tempImageUrl.trim()]);
+                            setTempImageUrl('');
+                          }
+                        }}
+                        className="bg-granite flex cursor-pointer items-center justify-center self-stretch rounded-lg border border-black/25 px-3 py-2 font-mono text-xs font-bold tracking-wider text-white uppercase shadow transition-all hover:bg-slate-800 active:scale-95"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="note-content"
+                    className="text-gunmetal text-md mb-0.5 ml-1 block font-semibold"
+                  >
+                    Scribble Content
+                  </label>
+                  <textarea
+                    id="note-content"
+                    value={newContent}
+                    onChange={(e) => setNewContent(e.target.value)}
+                    placeholder="Type your thoughts here..."
+                    rows={9}
+                    className="border-dust-grey focus:border-granite text-md w-full rounded-lg border bg-white p-2.5 font-['Patrick_Hand',_cursive] shadow-sm select-text focus:outline-none"
+                  />
+                </div>
+
+                {/* FOOTER BUTTONS */}
+                <div className="border-gunmetal/10 mt-3 flex justify-end gap-3 border-t pt-3 select-none">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setNoteError('');
+                    }}
+                    colors={{ bg: '#fff', text: 'var(--granite)', stroke: 'var(--granite)' }}
+                    className="hover:bg-slate-50"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    colors={{ bg: 'var(--granite)', text: '#fff', stroke: '#000' }}
+                  >
+                    Pin Note
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {/* 3D Flippable Note Details and Edit Modal */}
+      {isDetailModalOpen && selectedNote && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
+          {/* Backdrop */}
+          <button
+            type="button"
+            className="animate-fade-in fixed inset-0 h-full w-full cursor-pointer border-none bg-black/50 backdrop-blur-sm"
+            onClick={() => {
+              setIsDetailModalOpen(false);
+              setIsFlipped(false);
+              setSelectedNote(null);
+            }}
+            aria-label="Close detailed view"
+          />
+
+          {/* 3D Flip Card Container */}
+          <div
+            className="flip-card-container relative z-10 w-full max-w-[850px]"
+            style={{ minHeight: '670px' }}
+          >
+            <div className={`flip-card-inner ${isFlipped ? 'flipped' : ''}`}>
+              {/* FRONT: Detailed View */}
+              <div className="flip-card-front">
+                <Card
+                  variant="notebook"
+                  className="compact-modal relative w-full select-text"
+                  style={{ minHeight: '670px', height: '670px' }}
+                >
+                  <div className="flex h-full w-full flex-col justify-between">
+                    {/* Absolute Top-Right Controls Container (Actions + Close Button aligned) */}
+                    <div className="absolute top-4 right-4 z-20 flex items-center gap-2.5 select-none">
+                      {/* Favorite Button */}
+                      <button
+                        onClick={() => {
+                          toggleFavorite(selectedNote.id);
+                          setSelectedNote((prev) =>
+                            prev ? { ...prev, isFavorite: !prev.isFavorite } : null
+                          );
+                        }}
+                        className="text-gunmetal flex cursor-pointer items-center justify-center rounded-full bg-[#FAF8F5] p-2 shadow-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-90"
+                        title={selectedNote.isFavorite ? 'Unfavorite' : 'Favorite'}
+                      >
+                        <svg
+                          className={`h-5 w-5 ${selectedNote.isFavorite ? 'fill-yellow-400 text-yellow-500' : 'text-gunmetal/70'}`}
+                          fill={selectedNote.isFavorite ? 'currentColor' : 'none'}
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2.2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.246.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.77-.564-.371-1.81.588-1.81h4.908a1 1 0 00.95-.69l1.519-4.674z"
+                          />
+                        </svg>
+                      </button>
+
+                      {/* Edit Button (Scribbled pencil icon, flips to back!) */}
+                      <button
+                        onClick={() => setIsFlipped(true)}
+                        className="text-gunmetal flex cursor-pointer items-center justify-center rounded-full bg-[#FAF8F5] p-2 shadow-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-90"
+                        title="Edit Note"
+                      >
+                        <svg
+                          className="text-gunmetal/80 h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2.2}
+                        >
+                          {/* Crooked Hand-Drawn Pencil Outline */}
+                          <path
+                            d="M13.5 4.5l6 6M4 20h4L20 8.5 15.5 4 4 16v4z"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          {/* Scribbled details on pencil barrel */}
+                          <path d="M6 18l1.5-1.5M16 8l1.5-1.5" strokeLinecap="round" />
+                        </svg>
+                      </button>
+
+                      {/* Delete Button (Scribbled crooked trash can icon) */}
+                      <button
+                        onClick={() => {
+                          handleDeleteNote(selectedNote.id);
+                          setIsDetailModalOpen(false);
+                          setIsFlipped(false);
+                          setSelectedNote(null);
+                        }}
+                        className="text-gunmetal flex cursor-pointer items-center justify-center rounded-full bg-[#FAF8F5] p-2 shadow-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-90"
+                        title="Delete Note"
+                      >
+                        <svg
+                          className="text-gunmetal/80 h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2.2}
+                        >
+                          {/* Crooked Lid */}
+                          <path d="M3.5 6.5h16.8" strokeLinecap="round" />
+                          {/* Crooked Lid Handle */}
+                          <path
+                            d="M9.2 6.5v-2.2c0-.4.3-.8.8-.8h3.8c.4 0 .8.4.8.8v2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          {/* Crooked Body */}
+                          <path
+                            d="M18.3 6.8l-1.1 12.4c-.1 1-.9 1.8-1.9 1.8H8.5c-1 0-1.8-.8-1.9-1.8L5.5 6.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          {/* Crooked Stripes */}
+                          <path d="M10.2 10.5v6.5 M13.8 10.5v6.5" strokeLinecap="round" />
+                        </svg>
+                      </button>
+
+                      {/* Hand-sketched divider line */}
+                      <div className="bg-gunmetal/15 mx-0.5 h-5 w-[1.5px]" />
+
+                      {/* Close Button */}
+                      <button
+                        onClick={() => {
+                          setIsDetailModalOpen(false);
+                          setIsFlipped(false);
+                          setSelectedNote(null);
+                        }}
+                        aria-label="Close detailed view modal"
+                        className="text-gunmetal flex cursor-pointer items-center justify-center rounded-full bg-[#FAF8F5] p-2 shadow-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-90"
+                      >
+                        <svg
+                          className="text-gunmetal/85 h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2.5}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Header: Category Badge and Date (STATIC) */}
+                    <div className="border-gunmetal/15 mb-4 flex w-full items-center justify-between border-b border-dashed pb-3 select-none">
+                      {/* Left: Category Badge & Created At Date beside it */}
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="bg-granite rounded-lg px-3 py-1 font-mono text-xs font-bold tracking-wide text-white uppercase">
+                          📁 {selectedNote.category}
+                        </span>
+                        <span className="text-granite/70 font-mono text-xs font-bold tracking-wider uppercase">
+                          Created: {selectedNote.createdAt}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* SCROLLABLE BODY CONTAINER */}
+                    <div
+                      className="mb-4 flex-1 scrollbar-thin overflow-y-auto pr-1.5 select-text"
+                      style={{ maxHeight: '495px' }}
+                    >
+                      {/* Note Title */}
+                      <h2 className="text-granite mb-4 font-['Caveat',_cursive] text-5xl font-bold tracking-wide">
+                        {selectedNote.title}
+                      </h2>
+
+                      {/* Note Images (Polaroid style deck!) */}
+                      {(() => {
+                        const imgs =
+                          selectedNote.imageUrls && selectedNote.imageUrls.length > 0
+                            ? selectedNote.imageUrls
+                            : selectedNote.imageUrl
+                              ? [selectedNote.imageUrl]
+                              : [];
+
+                        if (imgs.length === 0) return null;
+
+                        // Dynamic hand-scattered rotations
+                        const rotations = [
+                          'rotate-[-2deg]',
+                          'rotate-[1.5deg]',
+                          'rotate-[-1deg]',
+                          'rotate-[2deg]',
+                          'rotate-[-2.5deg]',
+                        ];
+
+                        return (
+                          <div className="mb-4 flex max-w-full scrollbar-thin justify-center gap-4 overflow-x-auto px-3 pt-2 pb-6 select-none">
+                            {imgs.map((url, idx) => {
+                              const rotation = rotations[idx % rotations.length];
+                              return (
+                                <div
+                                  key={url + '-' + idx}
+                                  onClick={() => setPreviewImageUrl(url)}
+                                  className={`flex-shrink-0 bg-white p-3 shadow-md ${rotation} border-gunmetal/80 w-[170px] cursor-pointer border-2 transition-all duration-300 hover:scale-105 hover:rotate-0`}
+                                  style={{
+                                    borderRadius: '8px 18px 10px 24px / 20px 8px 24px 10px',
+                                  }}
+                                >
+                                  <div
+                                    className="bg-alabaster-grey/10 border-gunmetal/30 relative aspect-square w-full overflow-hidden border"
+                                    style={{
+                                      borderRadius: '6px 14px 8px 18px / 18px 6px 18px 8px',
+                                    }}
+                                  >
+                                    <img
+                                      src={url}
+                                      alt={`Polaroid ${idx + 1}`}
+                                      className="h-full w-full object-cover"
+                                      onError={(e) => {
+                                        (e.currentTarget as HTMLImageElement).src =
+                                          'https://placehold.co/400x400?text=Invalid+Image';
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="pt-2.5 text-center">
+                                    <p className="text-gunmetal/60 font-['Caveat',_cursive] text-[13px] font-bold">
+                                      Snapshot {idx + 1} of {imgs.length}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Content */}
+                      <div className="paper-sheet-lined mx-auto min-h-[180px] w-[650px] max-w-full p-4 select-text">
+                        <p
+                          className={`text-gunmetal/90 font-['Patrick_Hand',_cursive] text-xl leading-relaxed whitespace-pre-wrap ${selectedNote.category === 'reminder' ? 'text-teal-850 italic' : ''}`}
+                        >
+                          {selectedNote.content.includes('~~')
+                            ? selectedNote.content.split('\n').map((line, i) => {
+                                const lineKey = `${selectedNote.id}-detail-line-${i}`;
+                                if (line.startsWith('~~') && line.endsWith('~~')) {
+                                  return (
+                                    <span
+                                      key={lineKey}
+                                      className="text-gunmetal/40 block line-through"
+                                    >
+                                      {line.replaceAll('~~', '')}
+                                    </span>
+                                  );
+                                }
+                                return (
+                                  <span key={lineKey} className="block">
+                                    {line}
+                                  </span>
+                                );
+                              })
+                            : selectedNote.content}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Footer Container (STATIC) */}
+                    <div className="border-gunmetal/10 mt-auto border-t pt-3 select-none">
+                      {/* Tags Row */}
+                      <div className="flex flex-wrap gap-2">
+                        {selectedNote.tags?.map((tag) => (
+                          <span
+                            key={tag}
+                            className="bg-ash-grey/30 text-granite rounded px-2.5 py-1 font-mono text-xs font-bold tracking-wider uppercase"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                        {!selectedNote.tags && (
+                          <span className="bg-ash-grey/30 text-granite rounded px-2.5 py-1 font-mono text-xs font-bold tracking-wider uppercase">
+                            #{selectedNote.category}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              <div className="flip-card-back">
+                <Card
+                  variant="notebook"
+                  className="compact-modal relative w-full"
+                  style={{ minHeight: '670px', height: '670px' }}
+                >
+                  {/* Close button */}
+                  <button
+                    onClick={() => {
+                      setIsDetailModalOpen(false);
+                      setIsFlipped(false);
+                      setSelectedNote(null);
+                    }}
+                    aria-label="Close edit detailed modal"
+                    className="text-gunmetal absolute top-4 right-4 z-20 cursor-pointer transition-transform hover:scale-110"
+                  >
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+
+                  <h2 className="text-granite mb-2 font-['Caveat',_cursive] text-4xl font-bold select-none">
+                    Edit Note Draft
+                  </h2>
+
+                  {noteError && (
+                    <div className="animate-shake text-md mb-4 rounded-lg border-2 border-red-300 bg-red-50 p-2.5 text-center font-bold text-red-600 shadow-sm select-none">
+                      ⚠️ {noteError}
+                    </div>
+                  )}
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      setNoteError('');
+
+                      if (!newTitle.trim()) {
+                        setNoteError('Title is required!');
+                        return;
+                      }
+                      if (!newContent.trim()) {
+                        setNoteError('Content cannot be empty!');
+                        return;
+                      }
+
+                      const tags = newTagsString.trim()
+                        ? newTagsString
+                            .split(',')
+                            .map((t) => t.trim().toLowerCase())
+                            .filter(Boolean)
+                        : undefined;
+
+                      const updatedNote: Note = {
+                        ...selectedNote,
+                        title: newTitle.trim(),
+                        category: newCategory,
+                        content: newContent.trim(),
+                        tags,
+                        imageUrls: newImageUrls.filter(Boolean),
+                        imageUrl: undefined,
+                      } as Note;
+
+                      // Update state
+                      const updated = notes.map((n) =>
+                        n.id === selectedNote.id ? updatedNote : n
+                      );
+                      saveNotes(updated);
+                      setSelectedNote(updatedNote);
+
+                      // Flip card back in 3D!
+                      setIsFlipped(false);
+                    }}
+                    className="flex w-full flex-1 flex-col justify-between"
+                  >
+                    {/* SCROLLABLE FIELDS CONTAINER */}
+                    <div className="max-h-[520px] w-full flex-1 scrollbar-thin space-y-4 overflow-y-auto pr-1.5">
+                      <div>
+                        <label
+                          htmlFor="edit-note-title"
+                          className="text-gunmetal text-md mb-0.5 ml-1 block font-semibold"
+                        >
+                          Title
+                        </label>
+                        <Input
+                          id="edit-note-title"
+                          type="text"
+                          value={newTitle}
+                          onChange={(e) => setNewTitle(e.target.value)}
+                          placeholder="e.g. Project Ideas for 2024"
+                          className="w-full"
+                          size="md"
+                        />
+                      </div>
+
+                      <div>
+                        <span className="text-gunmetal text-md mb-1 ml-1 block font-semibold">
+                          Category & Folder
+                        </span>
+                        <div className="grid grid-cols-6 gap-2">
+                          {NOTE_CATEGORIES.map((cat) => {
+                            const active = newCategory === cat;
+                            return (
+                              <button
+                                key={cat}
+                                type="button"
+                                onClick={() => setNewCategory(cat)}
+                                className={`cursor-pointer rounded-lg border px-2 py-1.5 font-mono text-[10px] font-bold tracking-wide uppercase transition-all ${
+                                  active
+                                    ? 'bg-granite border-granite text-white'
+                                    : 'text-gunmetal border-dust-grey bg-white hover:bg-slate-50'
+                                }`}
+                              >
+                                {cat}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Tags Field */}
+                      <div>
+                        <label
+                          htmlFor="edit-note-tags"
+                          className="text-gunmetal text-md mb-0.5 ml-1 block font-semibold"
+                        >
+                          Tags (Comma separated)
+                        </label>
+                        <Input
+                          id="edit-note-tags"
+                          type="text"
+                          value={newTagsString}
+                          onChange={(e) => setNewTagsString(e.target.value)}
+                          placeholder="e.g. future, creative"
+                          className="w-full"
+                          size="md"
+                        />
+                      </div>
+
+                      {/* Multi-Image Polaroid Deck Manager */}
+                      <div className="border-gunmetal/10 space-y-2.5 rounded-xl border bg-[#FAF8F5]/30 p-3">
+                        <div className="flex items-center justify-between select-none">
+                          <span className="text-gunmetal text-md ml-1 block font-semibold">
+                            Polaroid Snapshots ({newImageUrls.length}/5)
+                          </span>
+                          {newImageUrls.length >= 5 && (
+                            <span className="font-mono text-xs font-bold tracking-wider text-emerald-700 uppercase">
+                              ✓ Max Images Reached
+                            </span>
+                          )}
+                        </div>
+
+                        {/* List of mini Polaroids */}
+                        {newImageUrls.length > 0 && (
+                          <div className="flex max-w-full scrollbar-thin gap-3 overflow-x-auto px-1.5 pt-1 pb-4 select-none">
+                            {newImageUrls.map((url, idx) => {
+                              const rotations = [
+                                'rotate-[-2deg]',
+                                'rotate-[1deg]',
+                                'rotate-[-1.5deg]',
+                                'rotate-[2deg]',
+                              ];
+                              const rotation = rotations[idx % rotations.length];
+                              return (
+                                <div
+                                  key={url + '-' + idx}
+                                  className={`group border-dust-grey/40 relative flex-shrink-0 bg-white p-2 shadow-sm ${rotation} w-[95px] border transition-all duration-300 hover:scale-105 hover:rotate-0`}
+                                >
+                                  <div className="bg-alabaster-grey/10 relative aspect-square w-full overflow-hidden rounded">
+                                    <img
+                                      src={url}
+                                      alt={`Polaroid ${idx + 1}`}
+                                      className="h-full w-full object-cover"
+                                      onError={(e) => {
+                                        (e.currentTarget as HTMLImageElement).src =
+                                          'https://placehold.co/100x100?text=Invalid';
+                                      }}
+                                    />
+                                    {/* Sketchy Center Delete Overlay (No red color, hand-drawn/scribbled trash SVG) */}
+                                    <div className="absolute inset-0 flex items-center justify-center rounded bg-[#FAF8F5]/85 opacity-0 backdrop-blur-[1.5px] transition-all duration-200 select-none group-hover:opacity-100">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setNewImageUrls(newImageUrls.filter((_, i) => i !== idx));
+                                        }}
+                                        className="text-gunmetal flex cursor-pointer items-center justify-center rounded-full bg-[#FAF8F5] p-2 shadow-md transition-all duration-200 hover:scale-110 hover:bg-white active:scale-90"
+                                        title="Delete Image"
+                                      >
+                                        <svg
+                                          className="text-gunmetal/90 h-5.5 w-5.5"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                          strokeWidth={2.2}
+                                        >
+                                          {/* Crooked Lid */}
+                                          <path d="M3.5 6.5h16.8" strokeLinecap="round" />
+                                          {/* Crooked Lid Handle */}
+                                          <path
+                                            d="M9.2 6.5v-2.2c0-.4.3-.8.8-.8h3.8c.4 0 .8.4.8.8v2.2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          />
+                                          {/* Crooked Body */}
+                                          <path
+                                            d="M18.3 6.8l-1.1 12.4c-.1 1-.9 1.8-1.9 1.8H8.5c-1 0-1.8-.8-1.9-1.8L5.5 6.8"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          />
+                                          {/* Crooked Stripes */}
+                                          <path
+                                            d="M10.2 10.5v6.5 M13.8 10.5v6.5"
+                                            strokeLinecap="round"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <div className="pt-1.5 text-center">
+                                    <p className="text-gunmetal/60 font-['Caveat',_cursive] text-[10px] leading-none font-bold">
+                                      Photo {idx + 1}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Input field to add a new URL (shown only if < 5 images exist) */}
+                        {newImageUrls.length < 5 && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <label htmlFor="edit-note-image-url" className="sr-only">
+                              Image URL
+                            </label>
+                            <Input
+                              id="edit-note-image-url"
+                              type="text"
+                              value={tempImageUrl}
+                              onChange={(e) => setTempImageUrl(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  if (tempImageUrl.trim()) {
+                                    setNewImageUrls([...newImageUrls, tempImageUrl.trim()]);
+                                    setTempImageUrl('');
+                                  }
+                                }
+                              }}
+                              placeholder="Paste a photo URL and click Add"
+                              className="flex-1"
+                              size="md"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (tempImageUrl.trim()) {
+                                  setNewImageUrls([...newImageUrls, tempImageUrl.trim()]);
+                                  setTempImageUrl('');
+                                }
+                              }}
+                              className="bg-granite flex cursor-pointer items-center justify-center self-stretch rounded-lg border border-black/25 px-3 py-2 font-mono text-xs font-bold tracking-wider text-white uppercase shadow transition-all hover:bg-slate-800 active:scale-95"
+                            >
+                              Add
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="edit-note-content"
+                          className="text-gunmetal text-md mb-0.5 ml-1 block font-semibold"
+                        >
+                          Scribble Content
+                        </label>
+                        <textarea
+                          id="edit-note-content"
+                          value={newContent}
+                          onChange={(e) => setNewContent(e.target.value)}
+                          placeholder="Type your thoughts here..."
+                          rows={9}
+                          className="border-dust-grey focus:border-granite text-md w-full rounded-lg border bg-white p-2.5 font-['Patrick_Hand',_cursive] shadow-sm select-text focus:outline-none"
+                        />
+                      </div>
+
+                      {/* FOOTER BUTTONS */}
+                      <div className="border-gunmetal/10 mt-3 flex justify-end gap-3 border-t pt-3 select-none">
+                        <Button
+                          type="button"
+                          onClick={() => setIsFlipped(false)}
+                          colors={{ bg: '#fff', text: 'var(--granite)', stroke: 'var(--granite)' }}
+                          className="hover:bg-slate-50"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          colors={{ bg: 'var(--granite)', text: '#fff', stroke: '#000' }}
+                        >
+                          Save Revision
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Premium Polaroid Image Lightbox/Preview Modal */}
+      {previewImageUrl && (
+        <div
+          className="bg-gunmetal/85 animate-fade-in fixed inset-0 z-[99999] flex cursor-zoom-out items-center justify-center p-4 backdrop-blur-md"
+          onClick={() => setPreviewImageUrl(null)}
+        >
+          {/* Polaroid frame around the previewed image */}
+          <div
+            className="animate-scale-up border-gunmetal relative max-h-[95vh] max-w-[95vw] border-4 bg-white p-4 pb-12 shadow-2xl md:max-w-[550px]"
+            style={{
+              borderRadius: '12px 24px 14px 30px / 30px 12px 30px 14px',
+              transform: 'rotate(-1deg)',
+            }}
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the card itself
+          >
+            {/* Close button inside polaroid frame */}
+            <button
+              onClick={() => setPreviewImageUrl(null)}
+              className="text-gunmetal/70 hover:text-gunmetal border-gunmetal/20 absolute top-2 right-2 z-10 cursor-pointer rounded-full border bg-[#FAF8F5] p-1.5 shadow-sm transition-transform hover:scale-110"
+              aria-label="Close preview"
             >
               <svg
                 className="h-5 w-5"
@@ -697,134 +1658,31 @@ export default function Home() {
               </svg>
             </button>
 
-            <h2 className="text-granite mb-4 font-['Caveat',_cursive] text-4xl font-bold">
-              Scribble a Note
-            </h2>
+            {/* Scribbled handmade border wrapper for image */}
+            <div
+              className="bg-alabaster-grey/10 border-gunmetal/70 relative w-full overflow-hidden border-2"
+              style={{
+                borderRadius: '8px 18px 10px 24px / 24px 8px 24px 10px',
+              }}
+            >
+              <img
+                src={previewImageUrl}
+                alt="Preview snapshot"
+                className="max-h-[60vh] w-full max-w-full object-contain select-none"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src =
+                    'https://placehold.co/800x800?text=Invalid+Image';
+                }}
+              />
+            </div>
 
-            {noteError && (
-              <div className="animate-shake mb-6 rounded-lg border-2 border-red-300 bg-red-50 p-4 text-center text-lg font-bold text-red-600 shadow-sm">
-                ⚠️ {noteError}
-              </div>
-            )}
-
-            <form onSubmit={handleAddNote} className="space-y-5">
-              <div>
-                <label
-                  htmlFor="note-title"
-                  className="text-gunmetal mb-1 ml-1 block text-lg font-semibold"
-                >
-                  Title
-                </label>
-                <Input
-                  id="note-title"
-                  type="text"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="e.g. Project Ideas for 2024"
-                  className="w-full"
-                  size="lg"
-                />
-              </div>
-
-              <div>
-                <span className="text-gunmetal mb-1 ml-1 block text-lg font-semibold">
-                  Category & Folder
-                </span>
-                <div className="grid grid-cols-6 gap-2">
-                  {NOTE_CATEGORIES.map((cat) => {
-                    const active = newCategory === cat;
-                    return (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => setNewCategory(cat)}
-                        className={`cursor-pointer rounded-lg border px-3.5 py-2 font-mono text-xs font-bold tracking-wide uppercase transition-all ${
-                          active
-                            ? 'bg-granite border-granite text-white'
-                            : 'text-gunmetal border-dust-grey bg-white hover:bg-slate-50'
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="note-tags"
-                  className="text-gunmetal mb-1 ml-1 block text-lg font-semibold"
-                >
-                  Tags (Comma separated)
-                </label>
-                <Input
-                  id="note-tags"
-                  type="text"
-                  value={newTagsString}
-                  onChange={(e) => setNewTagsString(e.target.value)}
-                  placeholder="e.g. future, creative"
-                  className="w-full"
-                  size="lg"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="note-image"
-                  className="text-gunmetal mb-1 ml-1 block text-lg font-semibold"
-                >
-                  Image URL (Optional)
-                </label>
-                <Input
-                  id="note-image"
-                  type="text"
-                  value={newImageUrl}
-                  onChange={(e) => setNewImageUrl(e.target.value)}
-                  placeholder="e.g. /cafe_sketches.png or https://example.com/image.png"
-                  className="w-full"
-                  size="lg"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="note-content"
-                  className="text-gunmetal mb-1 ml-1 block text-lg font-semibold"
-                >
-                  Scribble Content
-                </label>
-                <textarea
-                  id="note-content"
-                  value={newContent}
-                  onChange={(e) => setNewContent(e.target.value)}
-                  placeholder="Type your thoughts here..."
-                  rows={6}
-                  className="border-dust-grey focus:border-granite w-full rounded-lg border bg-white p-3.5 font-['Patrick_Hand',_cursive] text-lg shadow-sm select-text focus:outline-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 select-none">
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setNoteError('');
-                  }}
-                  colors={{ bg: '#fff', text: 'var(--granite)', stroke: 'var(--granite)' }}
-                  className="hover:bg-slate-50"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  colors={{ bg: 'var(--granite)', text: '#fff', stroke: '#000' }}
-                >
-                  Pin Note
-                </Button>
-              </div>
-            </form>
-          </Card>
+            {/* Hand-drawn caption at the bottom of the polaroid */}
+            <div className="pt-5 text-center select-none">
+              <p className="text-gunmetal font-['Caveat',_cursive] text-2xl font-bold tracking-wide">
+                ✨ Snapshot Preview ✨
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>
