@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, Button, Avatar, Badge } from 'sketchbook-ui';
@@ -10,6 +10,14 @@ import { FilterBar } from '@/components/notes/FilterBar';
 import { AddNoteModal } from '@/components/notes/AddNoteModal';
 import { DetailModal } from '@/components/notes/DetailModal';
 import { LightboxModal } from '@/components/notes/LightboxModal';
+import { notesService } from '@/services/notesService';
+interface AxiosErrorLike {
+  response?: {
+    data?: {
+      detail?: string;
+    };
+  };
+}
 
 const getFormattedDate = (note: Note) => {
   const dateVal = note.created_at || note.createdAt;
@@ -35,76 +43,14 @@ export default function Home() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
 
-  // Local state for notes app initialized lazily to avoid state-in-effect warning
-  const [notes, setNotes] = useState<Note[]>(() => {
-    if (globalThis.window !== undefined) {
-      const saved = localStorage.getItem('brainrot_notes');
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error('Failed to load notes:', e);
-        }
-      }
-
-      // Default starter notes matching the brand colors and tags
-      const defaults: Note[] = [
-        {
-          id: '1',
-          title: 'Project Ideas for 2024',
-          category: 'genius',
-          content:
-            "1. AI that writes bad poetry.\n2. Digital garden for plants that don't exist.\n3. A clock that only counts weekend minutes.",
-          createdAt: 'Oct 24, 2023',
-          tags: ['future', 'creative'],
-          isFavorite: true,
-        },
-        {
-          id: '2',
-          title: 'Cafe Sketches',
-          category: 'yaps',
-          content: 'The barista looked like a wizard today. Note: try more cross-hatching.',
-          createdAt: 'Oct 22, 2023',
-          imageUrls: ['/cafe_sketches.png'],
-          isFavorite: false,
-        },
-        {
-          id: '3',
-          title: 'Grocery List?',
-          category: 'high-rot',
-          content: '~~apples~~\nInk for the printer (CRITICAL)\nThose weird crackers I liked.',
-          createdAt: 'Oct 20, 2023',
-          isFavorite: false,
-        },
-        {
-          id: '4',
-          title: 'Deep Thoughts on Minimalism',
-          category: 'serious',
-          content:
-            "Minimalism isn't about having nothing. It's about making space for the things that actually matter. Like this notebook. It feels like real paper, but I can't spill coffee on it (physically). Digital permanence vs Analog feel.",
-          createdAt: 'Oct 15, 2023',
-          isFavorite: false,
-        },
-        {
-          id: '5',
-          title: 'Call Mom',
-          category: 'reminder',
-          content:
-            "She wanted to hear about the new job. Don't forget to mention the coffee machine is free.",
-          createdAt: 'Reminder',
-          isFavorite: true,
-        },
-      ];
-      localStorage.setItem('brainrot_notes', JSON.stringify(defaults));
-      return defaults;
-    }
-    return [];
-  });
+  // Local state for notes app
+  const [notes, setNotes] = useState<Note[]>([]);
 
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState<NoteCategory>('yaps');
   const [newImageUrls, setNewImageUrls] = useState<string[]>([]);
   const [newImageCaptions, setNewImageCaptions] = useState<string[]>([]);
+  const [newImageFiles, setNewImageFiles] = useState<(File | null)[]>([]);
   const [tempImageUrl, setTempImageUrl] = useState('');
   const [tempImageCaption, setTempImageCaption] = useState('');
   const [newContent, setNewContent] = useState('');
@@ -121,6 +67,55 @@ export default function Home() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Debounced search query to prevent hammering the backend
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // Fetch notes function
+  const fetchNotes = async () => {
+    try {
+      let resNotes: Note[] = [];
+      const cat = filterCategories.includes('all') ? undefined : filterCategories[0];
+      const isFav = selectedTab === 'favorites' ? true : undefined;
+
+      if (debouncedSearchQuery.trim().length >= 2) {
+        const searchRes = await notesService.searchNotes({
+          q: debouncedSearchQuery.trim(),
+          category: cat,
+          is_favorite: isFav,
+          limit: 100,
+        });
+        resNotes = searchRes.notes;
+      } else {
+        const listRes = await notesService.listNotes({
+          category: cat,
+          is_favorite: isFav,
+          limit: 100,
+        });
+        resNotes = listRes.notes;
+      }
+      setNotes(resNotes);
+    } catch (e) {
+      console.error('Failed to fetch notes:', e);
+    } finally {
+      // Fetch notes completed
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchNotes();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, debouncedSearchQuery, filterCategories, selectedTab]);
 
   let isSelectedNoteFav = false;
   if (selectedNote) {
@@ -151,6 +146,7 @@ export default function Home() {
       setNewImageUrls([]);
       setNewImageCaptions([]);
     }
+    setNewImageFiles([]);
     setTempImageUrl('');
     setTempImageCaption('');
 
@@ -161,7 +157,7 @@ export default function Home() {
   };
 
   // Prevent body scroll when modals are open
-  React.useEffect(() => {
+  useEffect(() => {
     if (isDetailModalOpen || isModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -173,7 +169,7 @@ export default function Home() {
   }, [isDetailModalOpen, isModalOpen]);
 
   // Close modals on Escape key press
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         if (previewImageUrl) {
@@ -196,7 +192,7 @@ export default function Home() {
   }, [isDetailModalOpen, isModalOpen, previewImageUrl]);
 
   // Dynamic DOM effect to allow sketchbook-ui inputs to stretch to full width
-  React.useEffect(() => {
+  useEffect(() => {
     if (isModalOpen) {
       const timer = setTimeout(() => {
         const svgs = document.querySelectorAll('.sketch-input svg');
@@ -208,13 +204,7 @@ export default function Home() {
     }
   }, [isModalOpen]);
 
-  // Save notes helper
-  const saveNotes = (updated: Note[]) => {
-    setNotes(updated);
-    localStorage.setItem('brainrot_notes', JSON.stringify(updated));
-  };
-
-  const handleAddNote = (e: React.SyntheticEvent) => {
+  const handleAddNote = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     setNoteError('');
 
@@ -234,56 +224,121 @@ export default function Home() {
           .filter(Boolean)
       : undefined;
 
-    const note: Note = {
-      id: Date.now().toString(),
-      title: newTitle.trim(),
-      category: newCategory,
-      content: newContent.trim(),
-      tags,
-      imageUrls: newImageUrls.filter(Boolean),
-      images: newImageUrls
-        .filter(Boolean)
-        .map((url, idx) => ({ url, caption: newImageCaptions[idx] || null })),
-      createdAt: new Date().toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      }),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      isFavorite: false,
-      is_favorite: false,
-    };
-
-    const updated = [note, ...notes];
-    saveNotes(updated);
-
-    // Reset state
-    setNewTitle('');
-    setNewImageUrls([]);
-    setNewImageCaptions([]);
-    setTempImageUrl('');
-    setTempImageCaption('');
-    setNewContent('');
-    setNewTagsString('');
-    setNewCategory('yaps');
-    setIsModalOpen(false);
-  };
-
-  const handleDeleteNote = (id: string) => {
-    const updated = notes.filter((n) => n.id !== id);
-    saveNotes(updated);
-  };
-
-  const toggleFavorite = (id: string) => {
-    const updated = notes.map((n) => {
-      if (n.id === id) {
-        const isFav = typeof n.is_favorite === 'boolean' ? n.is_favorite : !!n.isFavorite;
-        return { ...n, isFavorite: !isFav, is_favorite: !isFav };
+    // Filter files and captions so we only send indices that actually have Files
+    const actualFiles: File[] = [];
+    const actualCaptions: string[] = [];
+    newImageFiles.forEach((file, idx) => {
+      if (file) {
+        actualFiles.push(file);
+        actualCaptions.push(newImageCaptions[idx] || '');
       }
-      return n;
     });
-    saveNotes(updated);
+
+    try {
+      const createdNote = await notesService.createNote({
+        title: newTitle.trim(),
+        category: newCategory,
+        content: newContent.trim(),
+        tags,
+        is_favorite: false,
+        images: actualFiles,
+        captions: actualCaptions,
+      });
+
+      setNotes((prev) => [createdNote, ...prev]);
+
+      // Reset state
+      setNewTitle('');
+      setNewImageUrls([]);
+      setNewImageFiles([]);
+      setNewImageCaptions([]);
+      setTempImageUrl('');
+      setTempImageCaption('');
+      setNewContent('');
+      setNewTagsString('');
+      setNewCategory('yaps');
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Error adding note:', err);
+      setNoteError((err as AxiosErrorLike).response?.data?.detail || 'Failed to create note.');
+    }
+  };
+
+  const handleDeleteNote = async (id: string) => {
+    try {
+      await notesService.deleteNote(id);
+      setNotes((prev) => prev.filter((n) => n.id !== id));
+    } catch (err) {
+      console.error('Failed to delete note:', err);
+    }
+  };
+
+  const toggleFavorite = async (id: string) => {
+    const noteToToggle = notes.find((n) => n.id === id);
+    if (!noteToToggle) return;
+    const isFav =
+      typeof noteToToggle.is_favorite === 'boolean'
+        ? noteToToggle.is_favorite
+        : !!noteToToggle.isFavorite;
+    try {
+      const updated = await notesService.updateNote(id, { is_favorite: !isFav });
+      setNotes((prev) => prev.map((n) => (n.id === id ? updated : n)));
+      if (selectedNote && selectedNote.id === id) {
+        setSelectedNote(updated);
+      }
+    } catch (err) {
+      console.error('Failed to toggle favorite:', err);
+    }
+  };
+
+  const handleSaveRevision = async (originalNote: Note) => {
+    if (!originalNote) return;
+    setNoteError('');
+    try {
+      const id = originalNote.id;
+
+      // 1. Identify deleted images (they were in originalNote.images but are no longer in newImageUrls)
+      const originalImages = originalNote.images || [];
+      const deletedImages = originalImages.filter((img) => !newImageUrls.includes(img.url));
+
+      for (const img of deletedImages) {
+        await notesService.removeImage(id, img.url);
+      }
+
+      // 2. Identify new files and their corresponding captions
+      const actualFiles: File[] = [];
+      const actualCaptions: string[] = [];
+      newImageFiles.forEach((file, idx) => {
+        if (file) {
+          actualFiles.push(file);
+          actualCaptions.push(newImageCaptions[idx] || '');
+        }
+      });
+
+      // 3. Perform the PATCH update
+      const tags = newTagsString.trim()
+        ? newTagsString
+            .split(',')
+            .map((t) => t.trim().toLowerCase())
+            .filter(Boolean)
+        : undefined;
+
+      const updated = await notesService.updateNote(id, {
+        title: newTitle.trim(),
+        category: newCategory,
+        content: newContent.trim(),
+        tags,
+        images: actualFiles,
+        captions: actualCaptions,
+      });
+
+      setNotes((prev) => prev.map((n) => (n.id === id ? updated : n)));
+      setSelectedNote(updated);
+      setIsFlipped(false);
+    } catch (err) {
+      console.error('Error saving revision:', err);
+      setNoteError((err as AxiosErrorLike).response?.data?.detail || 'Failed to save revision.');
+    }
   };
 
   const handleLogout = async () => {
@@ -540,6 +595,8 @@ export default function Home() {
         setNewImageUrls={setNewImageUrls}
         newImageCaptions={newImageCaptions}
         setNewImageCaptions={setNewImageCaptions}
+        newImageFiles={newImageFiles}
+        setNewImageFiles={setNewImageFiles}
         tempImageUrl={tempImageUrl}
         setTempImageUrl={setTempImageUrl}
         tempImageCaption={tempImageCaption}
@@ -570,6 +627,8 @@ export default function Home() {
         setNewImageUrls={setNewImageUrls}
         newImageCaptions={newImageCaptions}
         setNewImageCaptions={setNewImageCaptions}
+        newImageFiles={newImageFiles}
+        setNewImageFiles={setNewImageFiles}
         tempImageUrl={tempImageUrl}
         setTempImageUrl={setTempImageUrl}
         tempImageCaption={tempImageCaption}
@@ -581,17 +640,13 @@ export default function Home() {
         setPreviewImageUrl={setPreviewImageUrl}
         onToggleFavorite={(id) => {
           toggleFavorite(id);
-          setSelectedNote((prev) =>
-            prev
-              ? { ...prev, isFavorite: !isSelectedNoteFav, is_favorite: !isSelectedNoteFav }
-              : null
-          );
+          setSelectedNote((prev) => (prev ? { ...prev, is_favorite: !isSelectedNoteFav } : null));
         }}
         onDeleteNote={handleDeleteNote}
-        onSaveRevision={(updatedNote) => {
-          const updated = notes.map((n) => (n.id === selectedNote?.id ? updatedNote : n));
-          saveNotes(updated);
-          setSelectedNote(updatedNote);
+        onSaveRevision={() => {
+          if (selectedNote) {
+            handleSaveRevision(selectedNote);
+          }
         }}
         getFormattedDate={getFormattedDate}
       />

@@ -112,6 +112,12 @@ describe('DetailModal Component', () => {
     // Click delete
     const deleteBtn = screen.getByTitle('Delete Note');
     fireEvent.click(deleteBtn);
+    expect(onDelete).not.toHaveBeenCalled();
+
+    // Click Yes, Delete! in confirmation modal
+    const confirmBtn = screen.getByText('Yes, Delete!');
+    fireEvent.click(confirmBtn);
+
     expect(onDelete).toHaveBeenCalledWith('test-note-1');
     expect(onClose).toHaveBeenCalled();
   });

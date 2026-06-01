@@ -27,6 +27,8 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({
   setNewImageUrls,
   newImageCaptions,
   setNewImageCaptions,
+  newImageFiles,
+  setNewImageFiles,
   tempImageUrl,
   setTempImageUrl,
   tempImageCaption,
@@ -164,6 +166,16 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({
                 onDeleteImage={(idx) => {
                   setNewImageUrls(newImageUrls.filter((_, i) => i !== idx));
                   setNewImageCaptions(newImageCaptions.filter((_, i) => i !== idx));
+                  if (setNewImageFiles && newImageFiles) {
+                    setNewImageFiles(newImageFiles.filter((_, i) => i !== idx));
+                  }
+                }}
+                onUpdateCaption={(idx, newCaption) => {
+                  setNewImageCaptions((prev) => {
+                    const next = [...prev];
+                    next[idx] = newCaption;
+                    return next;
+                  });
                 }}
               />
 
@@ -178,8 +190,18 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({
                   if (tempImageUrl.trim()) {
                     setNewImageUrls([...newImageUrls, tempImageUrl.trim()]);
                     setNewImageCaptions([...newImageCaptions, tempImageCaption.trim()]);
+                    if (setNewImageFiles && newImageFiles) {
+                      setNewImageFiles([...newImageFiles, null]);
+                    }
                     setTempImageUrl('');
                     setTempImageCaption('');
+                  }
+                }}
+                onAddFile={(file, caption) => {
+                  setNewImageUrls([...newImageUrls, URL.createObjectURL(file)]);
+                  setNewImageCaptions([...newImageCaptions, caption]);
+                  if (setNewImageFiles && newImageFiles) {
+                    setNewImageFiles([...newImageFiles, file]);
                   }
                 }}
               />

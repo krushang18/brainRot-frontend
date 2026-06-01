@@ -80,6 +80,26 @@ export const authService = {
   },
 
   /**
+   * Exchange GitHub OAuth temp_code for access/refresh tokens
+   */
+  async githubExchange(tempCode: string): Promise<LoginResponse> {
+    const response = await api.post<LoginResponse>('/auth/github/exchange', {
+      temp_code: tempCode,
+    });
+    return response.data;
+  },
+
+  /**
+   * Exchange Google OAuth temp_code for access/refresh tokens
+   */
+  async googleExchange(tempCode: string): Promise<LoginResponse> {
+    const response = await api.post<LoginResponse>('/auth/google/exchange', {
+      temp_code: tempCode,
+    });
+    return response.data;
+  },
+
+  /**
    * List all currently trusted devices
    */
   async listDevices(): Promise<DeviceDetails[]> {
