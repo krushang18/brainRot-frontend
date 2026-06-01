@@ -283,7 +283,7 @@ export default function Home() {
     try {
       const updated = await notesService.updateNote(id, { is_favorite: !isFav });
       setNotes((prev) => prev.map((n) => (n.id === id ? updated : n)));
-      if (selectedNote && selectedNote.id === id) {
+      if (selectedNote?.id === id) {
         setSelectedNote(updated);
       }
     } catch (err) {
