@@ -139,4 +139,28 @@ describe('authService', () => {
     expect(api.delete).toHaveBeenCalledWith('/auth/devices');
     expect(result).toEqual(mockResponse.data);
   });
+
+  it('calls githubExchange endpoint correctly', async () => {
+    const mockResponse = {
+      data: { otp_required: false, access_token: 'acc', refresh_token: 'ref' },
+    };
+    vi.mocked(api.post).mockResolvedValueOnce(mockResponse);
+
+    const result = await authService.githubExchange('temp123');
+    expect(api.post).toHaveBeenCalledWith('/auth/github/exchange', { temp_code: 'temp123' });
+    expect(result).toEqual(mockResponse.data);
+  });
+
+  it('calls googleExchange endpoint correctly', async () => {
+    const mockResponse = {
+      data: { otp_required: false, access_token: 'acc', refresh_token: 'ref' },
+    };
+    vi.mocked(api.post).mockResolvedValueOnce(mockResponse);
+
+    const result = await authService.googleExchange('google_temp456');
+    expect(api.post).toHaveBeenCalledWith('/auth/google/exchange', {
+      temp_code: 'google_temp456',
+    });
+    expect(result).toEqual(mockResponse.data);
+  });
 });

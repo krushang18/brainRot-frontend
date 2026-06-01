@@ -3,60 +3,56 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, Button, Badge } from 'sketchbook-ui';
-import api from '@/lib/api';
+import { authService } from '@/services/authService';
+
+// Error message map keyed by the ?error= query param value
+const ERROR_MESSAGES: Record<string, string> = {
+  oauth_failed: 'Google login failed, please try again',
+  no_email: 'No verified email found on your Google account',
+  github_oauth_failed: 'GitHub login failed, please try again',
+  github_no_email: 'No verified email found on your GitHub account',
+};
 
 function OAuthCallbackHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const errorParam = searchParams.get('error');
   const tempCode = searchParams.get('temp_code');
+  const provider = searchParams.get('provider') ?? 'github';
 
-  // Precalculate state during render to avoid synchronous setState inside useEffect
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(() => {
-    if (errorParam || !tempCode) {
-      return 'error';
-    }
-    return 'loading';
-  });
-
-  const [errorMessage, setErrorMessage] = useState(() => {
+  const resolveErrorMessage = () => {
     if (errorParam) {
-      return errorParam === 'no_email'
-        ? 'No verified email on your GitHub account'
-        : 'Login failed, try again';
+      return ERROR_MESSAGES[errorParam] ?? 'Login failed, please try again';
     }
-    if (!tempCode) {
-      return 'Invalid access code';
-    }
+    if (!tempCode) return 'Invalid access code';
     return '';
-  });
+  };
+
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(() =>
+    errorParam || !tempCode ? 'error' : 'loading'
+  );
+  const [errorMessage, setErrorMessage] = useState(resolveErrorMessage);
 
   useEffect(() => {
-    // If there is already an error on mount, do not attempt exchange
-    if (errorParam || !tempCode) {
-      return;
-    }
+    if (errorParam || !tempCode) return;
 
     let isSubscribed = true;
 
-    // Make POST exchange request
     async function exchangeCode() {
       try {
-        const response = await api.post('/auth/github/exchange', {
-          temp_code: tempCode,
-        });
+        // Call the correct exchange endpoint based on the OAuth provider
+        const data =
+          provider === 'google'
+            ? await authService.googleExchange(tempCode!)
+            : await authService.githubExchange(tempCode!);
 
         if (!isSubscribed) return;
 
-        const data = response.data;
-
-        // Store standard login response tokens
         if (data.access_token && data.refresh_token) {
           localStorage.setItem('accessToken', data.access_token);
           localStorage.setItem('refreshToken', data.refresh_token);
-
           setStatus('success');
-          // Navigate to dashboard
+          // Hard-navigate so AuthContext re-hydrates from localStorage
           globalThis.window.location.href = '/';
         } else {
           throw new Error('Tokens not returned');
@@ -65,22 +61,22 @@ function OAuthCallbackHandler() {
         if (!isSubscribed) return;
         console.error('OAuth exchange error:', err);
         setStatus('error');
-        setErrorMessage('Login failed, try again');
+        setErrorMessage('Login failed, please try again');
       }
     }
 
     exchangeCode();
-
     return () => {
       isSubscribed = false;
     };
-  }, [tempCode, errorParam]);
+  }, [tempCode, errorParam, provider]);
+
+  const providerLabel = provider === 'google' ? 'Google' : 'GitHub';
 
   if (status === 'loading') {
     return (
       <Card variant="notebook" className="w-full max-w-xl bg-white shadow-xl">
         <div className="flex min-h-[300px] flex-col items-center justify-center p-8 text-center">
-          {/* Custom premium hand-drawn wobbly spinner */}
           <div className="relative mb-6 flex h-16 w-16 items-center justify-center">
             <svg
               className="text-granite h-12 w-12 animate-spin"
@@ -107,7 +103,7 @@ function OAuthCallbackHandler() {
             Scribbling credentials...
           </h2>
           <p className="text-gunmetal/60 text-sm font-medium tracking-wider uppercase">
-            Exchanging secure keys with GitHub
+            Exchanging secure keys with {providerLabel}
           </p>
         </div>
       </Card>
@@ -138,7 +134,7 @@ function OAuthCallbackHandler() {
           Authentication Error
         </h2>
         <p className="text-gunmetal mb-6 font-['Patrick_Hand',_cursive] text-base">
-          {errorMessage || 'Login failed, try again'}
+          {errorMessage}
         </p>
         <Button
           onClick={() => router.push('/auth')}

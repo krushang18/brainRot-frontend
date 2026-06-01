@@ -41,6 +41,8 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   setNewImageUrls,
   newImageCaptions,
   setNewImageCaptions,
+  newImageFiles,
+  setNewImageFiles,
   tempImageUrl,
   setTempImageUrl,
   tempImageCaption,
@@ -55,6 +57,8 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   onSaveRevision,
   getFormattedDate,
 }) => {
+  const [isConfirmingDelete, setIsConfirmingDelete] = React.useState(false);
+
   if (!isOpen || !selectedNote) return null;
 
   const isSelectedNoteFav =
@@ -173,8 +177,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                   {/* Delete Button */}
                   <button
                     onClick={() => {
-                      onDeleteNote(selectedNote.id);
-                      onClose();
+                      setIsConfirmingDelete(true);
                     }}
                     className="text-gunmetal flex cursor-pointer items-center justify-center p-2 transition-all duration-200 hover:scale-115 active:scale-90"
                     title="Delete Note"
@@ -421,6 +424,16 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                       onDeleteImage={(idx) => {
                         setNewImageUrls(newImageUrls.filter((_, i) => i !== idx));
                         setNewImageCaptions(newImageCaptions.filter((_, i) => i !== idx));
+                        if (setNewImageFiles && newImageFiles) {
+                          setNewImageFiles(newImageFiles.filter((_, i) => i !== idx));
+                        }
+                      }}
+                      onUpdateCaption={(idx, newCaption) => {
+                        setNewImageCaptions((prev) => {
+                          const next = [...prev];
+                          next[idx] = newCaption;
+                          return next;
+                        });
                       }}
                     />
 
@@ -435,8 +448,18 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                         if (tempImageUrl.trim()) {
                           setNewImageUrls([...newImageUrls, tempImageUrl.trim()]);
                           setNewImageCaptions([...newImageCaptions, tempImageCaption.trim()]);
+                          if (setNewImageFiles && newImageFiles) {
+                            setNewImageFiles([...newImageFiles, null]);
+                          }
                           setTempImageUrl('');
                           setTempImageCaption('');
+                        }
+                      }}
+                      onAddFile={(file, caption) => {
+                        setNewImageUrls([...newImageUrls, URL.createObjectURL(file)]);
+                        setNewImageCaptions([...newImageCaptions, caption]);
+                        if (setNewImageFiles && newImageFiles) {
+                          setNewImageFiles([...newImageFiles, file]);
                         }
                       }}
                     />
@@ -482,6 +505,54 @@ export const DetailModal: React.FC<DetailModalProps> = ({
           </div>
         </div>
       </div>
+
+      {isConfirmingDelete && (
+        <div className="animate-fadeIn fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm transition-all duration-300">
+          <div className="w-full max-w-sm p-4">
+            <Card
+              className="relative border-2 border-black bg-[#FFFDF9] p-6 shadow-xl"
+              style={{ transform: 'rotate(-1deg)' }}
+            >
+              {/* Hand-drawn aesthetic elements */}
+              <div className="text-granite absolute -top-3 left-1/2 -translate-x-1/2 -rotate-2 border border-black/30 bg-[#FAF8F5] px-4 py-1 font-mono text-[10px] font-bold tracking-wider uppercase shadow-sm">
+                ⚠️ Critical action
+              </div>
+
+              <div className="mt-4 space-y-4 text-center">
+                <h3 className="font-['Caveat',_cursive] text-3xl leading-tight font-extrabold text-red-600">
+                  Whoa, hold on!
+                </h3>
+                <p className="text-gunmetal/80 font-['Patrick_Hand',_cursive] text-lg leading-relaxed">
+                  Do you really wanna delete this scribble? Once it&apos;s ripped out of your
+                  notebook, there&apos;s no gluing it back!
+                </p>
+                <div className="flex justify-center gap-3 pt-2 font-mono text-xs font-bold uppercase select-none">
+                  <button
+                    type="button"
+                    id="confirm-delete-cancel"
+                    onClick={() => setIsConfirmingDelete(false)}
+                    className="border-granite text-granite flex cursor-pointer items-center justify-center rounded-lg border bg-white px-5 py-2.5 shadow transition-all hover:bg-slate-50 active:scale-95"
+                  >
+                    No, Keep It
+                  </button>
+                  <button
+                    type="button"
+                    id="confirm-delete-confirm"
+                    onClick={() => {
+                      onDeleteNote(selectedNote.id);
+                      setIsConfirmingDelete(false);
+                      onClose();
+                    }}
+                    className="flex cursor-pointer items-center justify-center rounded-lg border border-black/25 bg-red-600 px-5 py-2.5 text-white shadow transition-all hover:bg-red-700 active:scale-95"
+                  >
+                    Yes, Delete!
+                  </button>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

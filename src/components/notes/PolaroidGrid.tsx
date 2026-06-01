@@ -7,13 +7,18 @@ interface PolaroidGridProps {
   imageUrls: string[];
   imageCaptions: string[];
   onDeleteImage: (idx: number) => void;
+  onUpdateCaption?: (idx: number, newCaption: string) => void;
 }
 
 export const PolaroidGrid: React.FC<PolaroidGridProps> = ({
   imageUrls,
   imageCaptions,
   onDeleteImage,
+  onUpdateCaption,
 }) => {
+  const [editingIdx, setEditingIdx] = React.useState<number | null>(null);
+  const [editCaptionValue, setEditCaptionValue] = React.useState<string>('');
+
   if (imageUrls.length === 0) return null;
 
   return (
@@ -71,13 +76,45 @@ export const PolaroidGrid: React.FC<PolaroidGridProps> = ({
                 </button>
               </div>
             </div>
-            <div className="w-full max-w-full overflow-hidden px-1 pt-1.5 text-center text-ellipsis">
-              <p
-                className="text-gunmetal/60 overflow-hidden font-['Caveat',_cursive] text-[10px] leading-none font-bold text-ellipsis whitespace-nowrap"
-                title={imageCaptions[idx] || `Photo ${idx + 1}`}
-              >
-                {imageCaptions[idx] || `Photo ${idx + 1}`}
-              </p>
+            <div className="w-full max-w-full overflow-hidden px-1 pt-1 text-center">
+              {onUpdateCaption && editingIdx === idx ? (
+                <input
+                  type="text"
+                  value={editCaptionValue}
+                  onChange={(e) => setEditCaptionValue(e.target.value)}
+                  onBlur={() => {
+                    onUpdateCaption(idx, editCaptionValue.trim());
+                    setEditingIdx(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      onUpdateCaption(idx, editCaptionValue.trim());
+                      setEditingIdx(null);
+                    }
+                  }}
+                  autoFocus
+                  className="text-gunmetal w-full border-b border-black bg-transparent text-center font-['Caveat',_cursive] text-[10px] font-bold focus:outline-none"
+                />
+              ) : (
+                <p
+                  onClick={() => {
+                    if (onUpdateCaption) {
+                      setEditingIdx(idx);
+                      setEditCaptionValue(imageCaptions[idx] || '');
+                    }
+                  }}
+                  className={`text-gunmetal/60 overflow-hidden font-['Caveat',_cursive] text-[10px] leading-none font-bold text-ellipsis whitespace-nowrap ${
+                    onUpdateCaption ? 'hover:text-gunmetal cursor-pointer hover:underline' : ''
+                  }`}
+                  title={
+                    onUpdateCaption
+                      ? 'Click to edit caption'
+                      : imageCaptions[idx] || `Photo ${idx + 1}`
+                  }
+                >
+                  {imageCaptions[idx] || `Photo ${idx + 1}`}
+                </p>
+              )}
             </div>
           </div>
         );
@@ -93,6 +130,7 @@ interface PolaroidInputSectionProps {
   tempImageCaption: string;
   setTempImageCaption: (val: string) => void;
   onAddImage: () => void;
+  onAddFile?: (file: File, caption: string) => void;
 }
 
 export const PolaroidInputSection: React.FC<PolaroidInputSectionProps> = ({
@@ -102,13 +140,27 @@ export const PolaroidInputSection: React.FC<PolaroidInputSectionProps> = ({
   tempImageCaption,
   setTempImageCaption,
   onAddImage,
+  onAddFile,
 }) => {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   if (imageUrls.length >= 5) return null;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       onAddImage();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onAddFile) {
+      onAddFile(file, tempImageCaption.trim() || file.name.split('.')[0]);
+      setTempImageCaption('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -152,7 +204,23 @@ export const PolaroidInputSection: React.FC<PolaroidInputSectionProps> = ({
           />
         </div>
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept="image/*"
+          className="hidden"
+        />
+        {onAddFile && (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="border-granite text-granite flex cursor-pointer items-center justify-center rounded-lg border bg-white px-4 py-2 font-mono text-xs font-bold tracking-wider uppercase shadow transition-all select-none hover:bg-slate-50 active:scale-95"
+          >
+            Upload Photo
+          </button>
+        )}
         <button
           type="button"
           onClick={onAddImage}

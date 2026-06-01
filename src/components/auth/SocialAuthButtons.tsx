@@ -2,6 +2,7 @@ import React from 'react';
 
 export default function SocialAuthButtons() {
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+  const googleLoginUrl = `${apiBaseUrl}/auth/google/login`;
   const githubLoginUrl = `${apiBaseUrl}/auth/github/login`;
 
   return (
@@ -15,7 +16,11 @@ export default function SocialAuthButtons() {
       </div>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <button className="border-dust-grey hover:bg-alabaster-grey text-gunmetal flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors">
+        {/* Google OAuth — redirects browser to backend login URL */}
+        <a
+          href={googleLoginUrl}
+          className="border-dust-grey hover:bg-alabaster-grey text-gunmetal flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors"
+        >
           <svg className="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -35,7 +40,9 @@ export default function SocialAuthButtons() {
             />
           </svg>
           Google
-        </button>
+        </a>
+
+        {/* GitHub OAuth — redirects browser to backend login URL */}
         <a
           href={githubLoginUrl}
           className="border-dust-grey hover:bg-alabaster-grey text-gunmetal flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors"
