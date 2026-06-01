@@ -44,6 +44,63 @@ describe('PolaroidGrid Component', () => {
     fireEvent.error(img);
     expect(img).toHaveAttribute('src', 'https://placehold.co/100x100?text=Invalid');
   });
+
+  it('allows clicking caption to trigger edit mode, type, blur to save', () => {
+    const onDelete = vi.fn();
+    const onUpdateCaption = vi.fn();
+    render(
+      <PolaroidGrid
+        imageUrls={['https://example.com/1.jpg']}
+        imageCaptions={['Old Caption']}
+        onDeleteImage={onDelete}
+        onUpdateCaption={onUpdateCaption}
+      />
+    );
+
+    // Should render a button because onUpdateCaption is provided
+    const captionBtn = screen.getByRole('button', { name: 'Old Caption' });
+    expect(captionBtn).toBeInTheDocument();
+
+    // Click to enter editing mode
+    fireEvent.click(captionBtn);
+
+    // Should now render an input
+    const input = screen.getByRole('textbox');
+    expect(input).toBeInTheDocument();
+    expect(input).toHaveValue('Old Caption');
+
+    // Change input value
+    fireEvent.change(input, { target: { value: 'New Caption' } });
+
+    // Blur input
+    fireEvent.blur(input);
+
+    expect(onUpdateCaption).toHaveBeenCalledWith(0, 'New Caption');
+  });
+
+  it('allows saving caption edit mode via Enter key', () => {
+    const onDelete = vi.fn();
+    const onUpdateCaption = vi.fn();
+    render(
+      <PolaroidGrid
+        imageUrls={['https://example.com/1.jpg']}
+        imageCaptions={['']}
+        onDeleteImage={onDelete}
+        onUpdateCaption={onUpdateCaption}
+      />
+    );
+
+    const captionBtn = screen.getByRole('button', { name: 'Photo 1' });
+    fireEvent.click(captionBtn);
+
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, { target: { value: 'Another Caption' } });
+
+    // Press Enter
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
+
+    expect(onUpdateCaption).toHaveBeenCalledWith(0, 'Another Caption');
+  });
 });
 
 describe('PolaroidInputSection Component', () => {
@@ -97,5 +154,38 @@ describe('PolaroidInputSection Component', () => {
     // Trigger click on Add button
     fireEvent.click(addBtn);
     expect(onAdd).toHaveBeenCalledTimes(2);
+  });
+
+  it('handles local file uploads cleanly when onAddFile is present', () => {
+    const onAddFile = vi.fn();
+    const setCaption = vi.fn();
+
+    render(
+      <PolaroidInputSection
+        imageUrls={[]}
+        tempImageUrl=""
+        setTempImageUrl={vi.fn()}
+        tempImageCaption="Custom File Name"
+        setTempImageCaption={setCaption}
+        onAddImage={vi.fn()}
+        onAddFile={onAddFile}
+      />
+    );
+
+    const uploadBtn = screen.getByRole('button', { name: /upload photo/i });
+    expect(uploadBtn).toBeInTheDocument();
+    fireEvent.click(uploadBtn);
+
+    // Simulate clicking the file upload button (focusing element is fine, but we also directly trigger change)
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).toBeInTheDocument();
+
+    const file = new File(['dummy content'], 'test-image.png', { type: 'image/png' });
+
+    // Trigger change event on file input
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    expect(onAddFile).toHaveBeenCalledWith(file, 'Custom File Name');
+    expect(setCaption).toHaveBeenCalledWith('');
   });
 });

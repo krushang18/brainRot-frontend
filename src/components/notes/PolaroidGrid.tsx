@@ -26,6 +26,53 @@ export const PolaroidGrid: React.FC<PolaroidGridProps> = ({
       {imageUrls.map((url, idx) => {
         const rotations = ['rotate-[-2deg]', 'rotate-[1deg]', 'rotate-[-1.5deg]', 'rotate-[2deg]'];
         const rotation = rotations[idx % rotations.length];
+
+        let captionElement;
+        if (onUpdateCaption && editingIdx === idx) {
+          captionElement = (
+            <input
+              type="text"
+              value={editCaptionValue}
+              onChange={(e) => setEditCaptionValue(e.target.value)}
+              onBlur={() => {
+                onUpdateCaption(idx, editCaptionValue.trim());
+                setEditingIdx(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  onUpdateCaption(idx, editCaptionValue.trim());
+                  setEditingIdx(null);
+                }
+              }}
+              autoFocus
+              className="text-gunmetal w-full border-b border-black bg-transparent text-center font-['Caveat',_cursive] text-[10px] font-bold focus:outline-none"
+            />
+          );
+        } else if (onUpdateCaption) {
+          captionElement = (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingIdx(idx);
+                setEditCaptionValue(imageCaptions[idx] || '');
+              }}
+              className="text-gunmetal/60 hover:text-gunmetal w-full cursor-pointer overflow-hidden border-none bg-transparent p-0 text-center font-['Caveat',_cursive] text-[10px] leading-none font-bold text-ellipsis whitespace-nowrap hover:underline focus:outline-none"
+              title="Click to edit caption"
+            >
+              {imageCaptions[idx] || `Photo ${idx + 1}`}
+            </button>
+          );
+        } else {
+          captionElement = (
+            <p
+              className="text-gunmetal/60 overflow-hidden font-['Caveat',_cursive] text-[10px] leading-none font-bold text-ellipsis whitespace-nowrap"
+              title={imageCaptions[idx] || `Photo ${idx + 1}`}
+            >
+              {imageCaptions[idx] || `Photo ${idx + 1}`}
+            </p>
+          );
+        }
+
         return (
           <div
             key={url + '-' + idx}
@@ -77,44 +124,7 @@ export const PolaroidGrid: React.FC<PolaroidGridProps> = ({
               </div>
             </div>
             <div className="w-full max-w-full overflow-hidden px-1 pt-1 text-center">
-              {onUpdateCaption && editingIdx === idx ? (
-                <input
-                  type="text"
-                  value={editCaptionValue}
-                  onChange={(e) => setEditCaptionValue(e.target.value)}
-                  onBlur={() => {
-                    onUpdateCaption(idx, editCaptionValue.trim());
-                    setEditingIdx(null);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      onUpdateCaption(idx, editCaptionValue.trim());
-                      setEditingIdx(null);
-                    }
-                  }}
-                  autoFocus
-                  className="text-gunmetal w-full border-b border-black bg-transparent text-center font-['Caveat',_cursive] text-[10px] font-bold focus:outline-none"
-                />
-              ) : (
-                <p
-                  onClick={() => {
-                    if (onUpdateCaption) {
-                      setEditingIdx(idx);
-                      setEditCaptionValue(imageCaptions[idx] || '');
-                    }
-                  }}
-                  className={`text-gunmetal/60 overflow-hidden font-['Caveat',_cursive] text-[10px] leading-none font-bold text-ellipsis whitespace-nowrap ${
-                    onUpdateCaption ? 'hover:text-gunmetal cursor-pointer hover:underline' : ''
-                  }`}
-                  title={
-                    onUpdateCaption
-                      ? 'Click to edit caption'
-                      : imageCaptions[idx] || `Photo ${idx + 1}`
-                  }
-                >
-                  {imageCaptions[idx] || `Photo ${idx + 1}`}
-                </p>
-              )}
+              {captionElement}
             </div>
           </div>
         );
