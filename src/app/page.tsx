@@ -116,11 +116,13 @@ export default function Home() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleCardClick = (note: Note) => {
     setSelectedNote(note);
     setNewTitle(note.title);
     setNewCategory(note.category);
+    setCurrentImageIndex(0);
 
     // Load existing image(s) to multiple images state
     if (note.imageUrls && note.imageUrls.length > 0) {
@@ -1207,43 +1209,132 @@ export default function Home() {
                           'rotate-[-2.5deg]',
                         ];
 
+                        const prevIndex = (currentImageIndex - 1 + imgs.length) % imgs.length;
+                        const nextIndex = (currentImageIndex + 1) % imgs.length;
+
                         return (
-                          <div className="mb-4 flex max-w-full scrollbar-thin justify-center gap-4 overflow-x-auto px-3 pt-2 pb-6 select-none">
-                            {imgs.map((url, idx) => {
-                              const rotation = rotations[idx % rotations.length];
-                              return (
+                          <div className="relative mb-6 flex min-h-[220px] w-full items-center justify-center select-none">
+                            {/* Previous Image Peeking Card */}
+                            {imgs.length > 1 && (
+                              <div
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCurrentImageIndex(prevIndex);
+                                }}
+                                className="group absolute top-1/2 left-4 z-10 -translate-y-1/2 cursor-pointer transition-all duration-300 hover:-translate-x-1 hover:scale-110"
+                                title="Previous Image"
+                              >
                                 <div
-                                  key={url + '-' + idx}
-                                  onClick={() => setPreviewImageUrl(url)}
-                                  className={`flex-shrink-0 bg-white p-3 shadow-md ${rotation} border-gunmetal/80 w-[170px] cursor-pointer border-2 transition-all duration-300 hover:scale-105 hover:rotate-0`}
+                                  className="border-gunmetal/70 w-[70px] rotate-[-8deg] border border-dashed bg-white p-1.5 shadow-md transition-all duration-300 group-hover:rotate-0 group-hover:border-solid"
                                   style={{
-                                    borderRadius: '8px 18px 10px 24px / 20px 8px 24px 10px',
+                                    borderRadius: '4px 9px 5px 12px / 10px 4px 12px 5px',
                                   }}
                                 >
                                   <div
-                                    className="bg-alabaster-grey/10 border-gunmetal/30 relative aspect-square w-full overflow-hidden border"
+                                    className="bg-alabaster-grey/10 border-gunmetal/20 relative aspect-square w-full overflow-hidden border"
                                     style={{
-                                      borderRadius: '6px 14px 8px 18px / 18px 6px 18px 8px',
+                                      borderRadius: '3px 7px 4px 9px / 9px 3px 9px 4px',
                                     }}
                                   >
                                     <img
-                                      src={url}
-                                      alt={`Polaroid ${idx + 1}`}
-                                      className="h-full w-full object-cover"
+                                      src={imgs[prevIndex]}
+                                      alt="Previous Polaroid"
+                                      className="h-full w-full object-cover brightness-95 filter group-hover:brightness-100"
                                       onError={(e) => {
                                         (e.currentTarget as HTMLImageElement).src =
                                           'https://placehold.co/400x400?text=Invalid+Image';
                                       }}
                                     />
                                   </div>
-                                  <div className="pt-2.5 text-center">
-                                    <p className="text-gunmetal/60 font-['Caveat',_cursive] text-[13px] font-bold">
-                                      Snapshot {idx + 1} of {imgs.length}
+                                  <div className="pt-1 text-center select-none">
+                                    <p className="text-gunmetal/40 font-['Caveat',_cursive] text-[9px] font-bold">
+                                      &lt; Prev
                                     </p>
                                   </div>
                                 </div>
-                              );
-                            })}
+                              </div>
+                            )}
+
+                            {/* Active Image Card */}
+                            <div className="relative">
+                              {(() => {
+                                const activeUrl = imgs[currentImageIndex];
+                                const activeRotation =
+                                  rotations[currentImageIndex % rotations.length];
+                                return (
+                                  <div
+                                    onClick={() => setPreviewImageUrl(activeUrl)}
+                                    className={`bg-white p-3 shadow-md ${activeRotation} border-gunmetal/80 w-[200px] cursor-pointer border-2 transition-all duration-300 hover:scale-105 hover:rotate-0`}
+                                    style={{
+                                      borderRadius: '8px 18px 10px 24px / 20px 8px 24px 10px',
+                                    }}
+                                  >
+                                    <div
+                                      className="bg-alabaster-grey/10 border-gunmetal/30 relative aspect-square w-full overflow-hidden border"
+                                      style={{
+                                        borderRadius: '6px 14px 8px 18px / 18px 6px 18px 8px',
+                                      }}
+                                    >
+                                      <img
+                                        src={activeUrl}
+                                        alt={`Polaroid ${currentImageIndex + 1}`}
+                                        className="h-full w-full object-cover"
+                                        onError={(e) => {
+                                          (e.currentTarget as HTMLImageElement).src =
+                                            'https://placehold.co/400x400?text=Invalid+Image';
+                                        }}
+                                      />
+                                    </div>
+                                    <div className="pt-2.5 text-center">
+                                      <p className="text-gunmetal/60 font-['Caveat',_cursive] text-[13px] font-bold">
+                                        Snapshot {currentImageIndex + 1} of {imgs.length}
+                                      </p>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+
+                            {/* Next Image Peeking Card */}
+                            {imgs.length > 1 && (
+                              <div
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCurrentImageIndex(nextIndex);
+                                }}
+                                className="group absolute top-1/2 right-4 z-10 -translate-y-1/2 cursor-pointer transition-all duration-300 hover:translate-x-1 hover:scale-110"
+                                title="Next Image"
+                              >
+                                <div
+                                  className="border-gunmetal/70 w-[70px] rotate-[8deg] border border-dashed bg-white p-1.5 shadow-md transition-all duration-300 group-hover:rotate-0 group-hover:border-solid"
+                                  style={{
+                                    borderRadius: '9px 4px 12px 5px / 4px 10px 5px 12px',
+                                  }}
+                                >
+                                  <div
+                                    className="bg-alabaster-grey/10 border-gunmetal/20 relative aspect-square w-full overflow-hidden border"
+                                    style={{
+                                      borderRadius: '7px 3px 9px 4px / 3px 9px 4px 9px',
+                                    }}
+                                  >
+                                    <img
+                                      src={imgs[nextIndex]}
+                                      alt="Next Polaroid"
+                                      className="h-full w-full object-cover brightness-95 filter group-hover:brightness-100"
+                                      onError={(e) => {
+                                        (e.currentTarget as HTMLImageElement).src =
+                                          'https://placehold.co/400x400?text=Invalid+Image';
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="pt-1 text-center select-none">
+                                    <p className="text-gunmetal/40 font-['Caveat',_cursive] text-[9px] font-bold">
+                                      Next &gt;
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })()}
