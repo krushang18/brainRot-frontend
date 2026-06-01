@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, Input, Button, Avatar, Badge } from 'sketchbook-ui';
 
@@ -100,7 +99,6 @@ export default function Home() {
 
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState<NoteCategory>('yaps');
-  const [newImageUrl, setNewImageUrl] = useState('');
   const [newImageUrls, setNewImageUrls] = useState<string[]>([]);
   const [tempImageUrl, setTempImageUrl] = useState('');
   const [newContent, setNewContent] = useState('');
@@ -132,7 +130,6 @@ export default function Home() {
     } else {
       setNewImageUrls([]);
     }
-    setNewImageUrl('');
     setTempImageUrl('');
 
     setNewContent(note.content);
@@ -170,9 +167,9 @@ export default function Home() {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    globalThis.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      globalThis.removeEventListener('keydown', handleKeyDown);
     };
   }, [isDetailModalOpen, isModalOpen, previewImageUrl]);
 
@@ -252,7 +249,6 @@ export default function Home() {
 
     // Reset state
     setNewTitle('');
-    setNewImageUrl('');
     setNewImageUrls([]);
     setTempImageUrl('');
     setNewContent('');
@@ -491,7 +487,6 @@ export default function Home() {
               onClick={() => {
                 setNewTitle('');
                 setNewCategory('yaps');
-                setNewImageUrl('');
                 setNewImageUrls([]);
                 setTempImageUrl('');
                 setNewContent('');
@@ -709,12 +704,12 @@ export default function Home() {
                         {note.category}
                       </span>
                       {(() => {
-                        const imgs =
-                          note.imageUrls && note.imageUrls.length > 0
-                            ? note.imageUrls
-                            : note.imageUrl
-                              ? [note.imageUrl]
-                              : [];
+                        let imgs: string[] = [];
+                        if (note.imageUrls && note.imageUrls.length > 0) {
+                          imgs = note.imageUrls;
+                        } else if (note.imageUrl) {
+                          imgs = [note.imageUrl];
+                        }
                         if (imgs.length > 0) {
                           return (
                             <span
@@ -1214,12 +1209,12 @@ export default function Home() {
 
                       {/* Note Images (Polaroid style deck!) */}
                       {(() => {
-                        const imgs =
-                          selectedNote.imageUrls && selectedNote.imageUrls.length > 0
-                            ? selectedNote.imageUrls
-                            : selectedNote.imageUrl
-                              ? [selectedNote.imageUrl]
-                              : [];
+                        let imgs: string[] = [];
+                        if (selectedNote.imageUrls && selectedNote.imageUrls.length > 0) {
+                          imgs = selectedNote.imageUrls;
+                        } else if (selectedNote.imageUrl) {
+                          imgs = [selectedNote.imageUrl];
+                        }
 
                         if (imgs.length === 0) return null;
 
@@ -1239,12 +1234,13 @@ export default function Home() {
                           <div className="relative mb-6 flex min-h-[220px] w-full items-center justify-center select-none">
                             {/* Previous Image Peeking Card */}
                             {imgs.length > 1 && (
-                              <div
+                              <button
+                                type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setCurrentImageIndex(prevIndex);
                                 }}
-                                className="group absolute bottom-2 left-4 z-10 cursor-pointer transition-all duration-300 hover:-translate-x-1 hover:scale-110"
+                                className="group absolute bottom-2 left-4 z-10 cursor-pointer border-none bg-transparent p-0 text-left transition-all duration-300 outline-none hover:-translate-x-1 hover:scale-110"
                                 title="Previous Image"
                               >
                                 <div
@@ -1275,7 +1271,7 @@ export default function Home() {
                                     </p>
                                   </div>
                                 </div>
-                              </div>
+                              </button>
                             )}
 
                             {/* Active Image Card */}
@@ -1285,9 +1281,10 @@ export default function Home() {
                                 const activeRotation =
                                   rotations[currentImageIndex % rotations.length];
                                 return (
-                                  <div
+                                  <button
+                                    type="button"
                                     onClick={() => setPreviewImageUrl(activeUrl)}
-                                    className={`bg-white p-3 shadow-md ${activeRotation} border-gunmetal/80 w-[200px] cursor-pointer border-2 transition-all duration-300 hover:scale-105 hover:rotate-0`}
+                                    className={`bg-white p-3 shadow-md ${activeRotation} border-gunmetal/80 block w-[200px] cursor-pointer border-2 text-left transition-all duration-300 outline-none hover:scale-105 hover:rotate-0`}
                                     style={{
                                       borderRadius: '8px 18px 10px 24px / 20px 8px 24px 10px',
                                     }}
@@ -1313,19 +1310,20 @@ export default function Home() {
                                         Snapshot {currentImageIndex + 1} of {imgs.length}
                                       </p>
                                     </div>
-                                  </div>
+                                  </button>
                                 );
                               })()}
                             </div>
 
                             {/* Next Image Peeking Card */}
                             {imgs.length > 1 && (
-                              <div
+                              <button
+                                type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setCurrentImageIndex(nextIndex);
                                 }}
-                                className="group absolute right-4 bottom-2 z-10 cursor-pointer transition-all duration-300 hover:translate-x-1 hover:scale-110"
+                                className="group absolute right-4 bottom-2 z-10 cursor-pointer border-none bg-transparent p-0 text-left transition-all duration-300 outline-none hover:translate-x-1 hover:scale-110"
                                 title="Next Image"
                               >
                                 <div
@@ -1356,7 +1354,7 @@ export default function Home() {
                                     </p>
                                   </div>
                                 </div>
-                              </div>
+                              </button>
                             )}
                           </div>
                         );
@@ -1733,18 +1731,22 @@ export default function Home() {
 
       {/* Premium Polaroid Image Lightbox/Preview Modal */}
       {previewImageUrl && (
-        <div
-          className="bg-gunmetal/85 animate-fade-in fixed inset-0 z-[99999] flex cursor-zoom-out items-center justify-center p-4 backdrop-blur-md"
-          onClick={() => setPreviewImageUrl(null)}
-        >
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+          {/* Accessible native backdrop button */}
+          <button
+            type="button"
+            className="bg-gunmetal/85 animate-fade-in absolute inset-0 h-full w-full cursor-zoom-out border-none p-0 backdrop-blur-md"
+            onClick={() => setPreviewImageUrl(null)}
+            aria-label="Close image preview"
+          />
+
           {/* Polaroid frame around the previewed image */}
           <div
-            className="animate-scale-up border-gunmetal relative max-h-[95vh] max-w-[95vw] border-4 bg-white p-4 pb-12 shadow-2xl md:max-w-[550px]"
+            className="animate-scale-up border-gunmetal relative z-10 max-h-[95vh] max-w-[95vw] border-4 bg-white p-4 pb-12 shadow-2xl md:max-w-[550px]"
             style={{
               borderRadius: '12px 24px 14px 30px / 30px 12px 30px 14px',
               transform: 'rotate(-1deg)',
             }}
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the card itself
           >
             {/* Close button inside polaroid frame */}
             <button
