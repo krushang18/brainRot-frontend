@@ -1221,11 +1221,11 @@ export default function Home() {
                                   e.stopPropagation();
                                   setCurrentImageIndex(prevIndex);
                                 }}
-                                className="group absolute top-1/2 left-4 z-10 -translate-y-1/2 cursor-pointer transition-all duration-300 hover:-translate-x-1 hover:scale-110"
+                                className="group absolute bottom-2 left-4 z-10 cursor-pointer transition-all duration-300 hover:-translate-x-1 hover:scale-110"
                                 title="Previous Image"
                               >
                                 <div
-                                  className="border-gunmetal/70 w-[70px] rotate-[-8deg] border border-dashed bg-white p-1.5 shadow-md transition-all duration-300 group-hover:rotate-0 group-hover:border-solid"
+                                  className="border-gunmetal/70 w-[55px] rotate-[8deg] border border-dashed bg-white p-1 shadow-md transition-all duration-300 group-hover:rotate-0 group-hover:border-solid"
                                   style={{
                                     borderRadius: '4px 9px 5px 12px / 10px 4px 12px 5px',
                                   }}
@@ -1247,7 +1247,7 @@ export default function Home() {
                                     />
                                   </div>
                                   <div className="pt-1 text-center select-none">
-                                    <p className="text-gunmetal/40 font-['Caveat',_cursive] text-[9px] font-bold">
+                                    <p className="text-gunmetal/40 font-['Caveat',_cursive] text-[8px] font-bold">
                                       &lt; Prev
                                     </p>
                                   </div>
@@ -1302,11 +1302,11 @@ export default function Home() {
                                   e.stopPropagation();
                                   setCurrentImageIndex(nextIndex);
                                 }}
-                                className="group absolute top-1/2 right-4 z-10 -translate-y-1/2 cursor-pointer transition-all duration-300 hover:translate-x-1 hover:scale-110"
+                                className="group absolute right-4 bottom-2 z-10 cursor-pointer transition-all duration-300 hover:translate-x-1 hover:scale-110"
                                 title="Next Image"
                               >
                                 <div
-                                  className="border-gunmetal/70 w-[70px] rotate-[8deg] border border-dashed bg-white p-1.5 shadow-md transition-all duration-300 group-hover:rotate-0 group-hover:border-solid"
+                                  className="border-gunmetal/70 w-[55px] rotate-[-8deg] border border-dashed bg-white p-1 shadow-md transition-all duration-300 group-hover:rotate-0 group-hover:border-solid"
                                   style={{
                                     borderRadius: '9px 4px 12px 5px / 4px 10px 5px 12px',
                                   }}
@@ -1328,7 +1328,7 @@ export default function Home() {
                                     />
                                   </div>
                                   <div className="pt-1 text-center select-none">
-                                    <p className="text-gunmetal/40 font-['Caveat',_cursive] text-[9px] font-bold">
+                                    <p className="text-gunmetal/40 font-['Caveat',_cursive] text-[8px] font-bold">
                                       Next &gt;
                                     </p>
                                   </div>
