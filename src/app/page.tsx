@@ -153,6 +153,29 @@ export default function Home() {
     };
   }, [isDetailModalOpen, isModalOpen]);
 
+  // Close modals on Escape key press
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (previewImageUrl) {
+          setPreviewImageUrl(null);
+        } else if (isDetailModalOpen) {
+          setIsDetailModalOpen(false);
+          setIsFlipped(false);
+          setSelectedNote(null);
+        } else if (isModalOpen) {
+          setIsModalOpen(false);
+          setNoteError('');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isDetailModalOpen, isModalOpen, previewImageUrl]);
+
   // Dynamic DOM effect to allow sketchbook-ui inputs to stretch to full width
   React.useEffect(() => {
     if (isModalOpen) {
@@ -1058,7 +1081,7 @@ export default function Home() {
                             prev ? { ...prev, isFavorite: !prev.isFavorite } : null
                           );
                         }}
-                        className="text-gunmetal flex cursor-pointer items-center justify-center rounded-full bg-[#FAF8F5] p-2 shadow-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-90"
+                        className="text-gunmetal flex cursor-pointer items-center justify-center p-2 transition-all duration-200 hover:scale-115 active:scale-90"
                         title={selectedNote.isFavorite ? 'Unfavorite' : 'Favorite'}
                       >
                         <svg
@@ -1079,7 +1102,7 @@ export default function Home() {
                       {/* Edit Button (Scribbled pencil icon, flips to back!) */}
                       <button
                         onClick={() => setIsFlipped(true)}
-                        className="text-gunmetal flex cursor-pointer items-center justify-center rounded-full bg-[#FAF8F5] p-2 shadow-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-90"
+                        className="text-gunmetal flex cursor-pointer items-center justify-center p-2 transition-all duration-200 hover:scale-115 active:scale-90"
                         title="Edit Note"
                       >
                         <svg
@@ -1108,7 +1131,7 @@ export default function Home() {
                           setIsFlipped(false);
                           setSelectedNote(null);
                         }}
-                        className="text-gunmetal flex cursor-pointer items-center justify-center rounded-full bg-[#FAF8F5] p-2 shadow-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-90"
+                        className="text-gunmetal flex cursor-pointer items-center justify-center p-2 transition-all duration-200 hover:scale-115 active:scale-90"
                         title="Delete Note"
                       >
                         <svg
@@ -1148,7 +1171,7 @@ export default function Home() {
                           setSelectedNote(null);
                         }}
                         aria-label="Close detailed view modal"
-                        className="text-gunmetal flex cursor-pointer items-center justify-center rounded-full bg-[#FAF8F5] p-2 shadow-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-90"
+                        className="text-gunmetal flex cursor-pointer items-center justify-center p-2 transition-all duration-200 hover:scale-115 active:scale-90"
                       >
                         <svg
                           className="text-gunmetal/85 h-5 w-5"
