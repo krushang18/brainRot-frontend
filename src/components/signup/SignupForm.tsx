@@ -58,7 +58,7 @@ export default function SignupForm({ onToggle }: Readonly<SignupFormProps>) {
     validate,
     onSubmit: async (values) => {
       await signup(values.name, values.email, values.password, values.confirmPassword);
-      router.push('/settings');
+      router.push('/');
     },
   });
 

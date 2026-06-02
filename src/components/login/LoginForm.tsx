@@ -54,7 +54,7 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
         setDeviceId(returnedDeviceId);
         setShowOtp(true);
       } else {
-        router.push('/settings');
+        router.push('/');
       }
     },
   });
@@ -64,7 +64,7 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
       <OTPVerification
         email={formData.email}
         onSuccess={() => {
-          router.push('/settings');
+          router.push('/');
         }}
         onBack={() => {
           setDeviceId(undefined);
