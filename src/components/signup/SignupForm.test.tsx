@@ -102,7 +102,7 @@ describe('SignupForm', () => {
           'Password123!',
           'Password123!'
         );
-        expect(mockPush).toHaveBeenCalledWith('/settings');
+        expect(mockPush).toHaveBeenCalledWith('/');
       },
       { timeout: 2000 }
     );
