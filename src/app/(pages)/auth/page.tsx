@@ -1,43 +1,75 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Badge } from 'sketchbook-ui';
 import LoginForm from '@/components/login/LoginForm';
 import SignupForm from '@/components/signup/SignupForm';
 
-export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
+function AuthPageContent() {
+  const searchParams = useSearchParams();
+  const tab = searchParams.get('tab');
+  const [isLogin, setIsLogin] = useState(() => tab !== 'signup');
 
   const handleToggle = () => {
     setIsLogin((prev) => !prev);
   };
 
   return (
-    <div className="bg-alabaster-grey flex min-h-screen items-center justify-center p-4 md:p-8">
-      <main
-        className={`w-full transition-all duration-300 ease-in-out ${isLogin ? 'max-w-lg' : 'max-w-3xl'}`}
-      >
-        <div className="mb-8 flex justify-center">
-          <Link href="/" className="cursor-pointer transition-transform hover:scale-105">
-            <Badge
-              size="lg"
-              colors={{ bg: 'var(--granite)', text: '#fff', stroke: '#000' }}
-              typography={{
-                fontSize: '1.25rem',
-                fontWeight: 'bold',
-                fontFamily: 'Caveat, cursive',
-              }}
-            >
-              BrainRot
-            </Badge>
-          </Link>
-        </div>
+    <main
+      className={`w-full transition-all duration-300 ease-in-out ${isLogin ? 'max-w-lg' : 'max-w-3xl'}`}
+    >
+      <div className="mb-8 flex justify-center">
+        <Link href="/" className="cursor-pointer transition-transform hover:scale-105">
+          <Badge
+            size="lg"
+            colors={{ bg: 'var(--granite)', text: '#fff', stroke: '#000' }}
+            typography={{
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              fontFamily: 'Caveat, cursive',
+            }}
+          >
+            BrainRot
+          </Badge>
+        </Link>
+      </div>
 
-        <div className="transition-all duration-300 ease-in-out">
-          {isLogin ? <LoginForm onToggle={handleToggle} /> : <SignupForm onToggle={handleToggle} />}
-        </div>
-      </main>
+      <div className="transition-all duration-300 ease-in-out">
+        {isLogin ? <LoginForm onToggle={handleToggle} /> : <SignupForm onToggle={handleToggle} />}
+      </div>
+    </main>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <div className="bg-alabaster-grey flex min-h-screen items-center justify-center p-4 md:p-8">
+      <Suspense
+        fallback={
+          <main className="w-full max-w-lg">
+            <div className="mb-8 flex justify-center">
+              <Badge
+                size="lg"
+                colors={{ bg: 'var(--granite)', text: '#fff', stroke: '#000' }}
+                typography={{
+                  fontSize: '1.25rem',
+                  fontWeight: 'bold',
+                  fontFamily: 'Caveat, cursive',
+                }}
+              >
+                BrainRot
+              </Badge>
+            </div>
+            <div className="flex h-[400px] items-center justify-center rounded-2xl bg-white shadow-xl">
+              <div className="border-granite h-10 w-10 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
+            </div>
+          </main>
+        }
+      >
+        <AuthPageContent />
+      </Suspense>
     </div>
   );
 }
