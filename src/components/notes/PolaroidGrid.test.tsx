@@ -106,86 +106,25 @@ describe('PolaroidGrid Component', () => {
 describe('PolaroidInputSection Component', () => {
   it('returns null when imageUrls length >= 5', () => {
     const { container } = render(
-      <PolaroidInputSection
-        imageUrls={['1', '2', '3', '4', '5']}
-        tempImageUrl=""
-        setTempImageUrl={vi.fn()}
-        tempImageCaption=""
-        setTempImageCaption={vi.fn()}
-        onAddImage={vi.fn()}
-      />
+      <PolaroidInputSection imageUrls={['1', '2', '3', '4', '5']} onAddFile={vi.fn()} />
     );
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders input elements and calls set state handlers', () => {
-    const setUrl = vi.fn();
-    const setCaption = vi.fn();
-    const onAdd = vi.fn();
-
-    render(
-      <PolaroidInputSection
-        imageUrls={[]}
-        tempImageUrl="https://abc.xyz"
-        setTempImageUrl={setUrl}
-        tempImageCaption="Caption Text"
-        setTempImageCaption={setCaption}
-        onAddImage={onAdd}
-      />
-    );
-
-    const urlInput = screen.getByLabelText(/image url/i);
-    const captionInput = screen.getByLabelText(/caption/i);
-    const addBtn = screen.getByRole('button', { name: /add polaroid/i });
-
-    expect(urlInput).toHaveValue('https://abc.xyz');
-    expect(captionInput).toHaveValue('Caption Text');
-
-    fireEvent.change(urlInput, { target: { value: 'https://other.com' } });
-    expect(setUrl).toHaveBeenCalledWith('https://other.com');
-
-    fireEvent.change(captionInput, { target: { value: 'Other Caption' } });
-    expect(setCaption).toHaveBeenCalledWith('Other Caption');
-
-    // Trigger Enter keydown
-    fireEvent.keyDown(urlInput, { key: 'Enter', code: 'Enter' });
-    expect(onAdd).toHaveBeenCalled();
-
-    // Trigger click on Add button
-    fireEvent.click(addBtn);
-    expect(onAdd).toHaveBeenCalledTimes(2);
-  });
-
-  it('handles local file uploads cleanly when onAddFile is present', () => {
+  it('renders upload button and handles file selection', () => {
     const onAddFile = vi.fn();
-    const setCaption = vi.fn();
-
-    render(
-      <PolaroidInputSection
-        imageUrls={[]}
-        tempImageUrl=""
-        setTempImageUrl={vi.fn()}
-        tempImageCaption="Custom File Name"
-        setTempImageCaption={setCaption}
-        onAddImage={vi.fn()}
-        onAddFile={onAddFile}
-      />
-    );
+    render(<PolaroidInputSection imageUrls={[]} onAddFile={onAddFile} />);
 
     const uploadBtn = screen.getByRole('button', { name: /upload photo/i });
     expect(uploadBtn).toBeInTheDocument();
     fireEvent.click(uploadBtn);
 
-    // Simulate clicking the file upload button (focusing element is fine, but we also directly trigger change)
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     expect(fileInput).toBeInTheDocument();
 
     const file = new File(['dummy content'], 'test-image.png', { type: 'image/png' });
-
-    // Trigger change event on file input
     fireEvent.change(fileInput, { target: { files: [file] } });
 
-    expect(onAddFile).toHaveBeenCalledWith(file, 'Custom File Name');
-    expect(setCaption).toHaveBeenCalledWith('');
+    expect(onAddFile).toHaveBeenCalledWith(file, 'test-image');
   });
 });

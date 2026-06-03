@@ -21,10 +21,6 @@ describe('AddNoteModal Component', () => {
         setNewImageUrls={vi.fn()}
         newImageCaptions={[]}
         setNewImageCaptions={vi.fn()}
-        tempImageUrl=""
-        setTempImageUrl={vi.fn()}
-        tempImageCaption=""
-        setTempImageCaption={vi.fn()}
         newContent=""
         setNewContent={vi.fn()}
       />
@@ -50,10 +46,6 @@ describe('AddNoteModal Component', () => {
         setNewImageUrls={vi.fn()}
         newImageCaptions={[]}
         setNewImageCaptions={vi.fn()}
-        tempImageUrl=""
-        setTempImageUrl={vi.fn()}
-        tempImageCaption=""
-        setTempImageCaption={vi.fn()}
         newContent=""
         setNewContent={vi.fn()}
       />
@@ -90,10 +82,6 @@ describe('AddNoteModal Component', () => {
         setNewImageUrls={vi.fn()}
         newImageCaptions={[]}
         setNewImageCaptions={vi.fn()}
-        tempImageUrl=""
-        setTempImageUrl={vi.fn()}
-        tempImageCaption=""
-        setTempImageCaption={vi.fn()}
         newContent="My Content"
         setNewContent={setContent}
       />
@@ -120,9 +108,7 @@ describe('AddNoteModal Component', () => {
     expect(onSubmit).toHaveBeenCalled();
   });
 
-  it('handles adding polaroid url/caption snaps correctly', () => {
-    const setTempUrl = vi.fn();
-    const setTempCaption = vi.fn();
+  it('handles uploading and deleting polaroid snaps correctly', () => {
     const setImageUrls = vi.fn();
     const setImageCaptions = vi.fn();
 
@@ -142,36 +128,19 @@ describe('AddNoteModal Component', () => {
         setNewImageUrls={setImageUrls}
         newImageCaptions={[]}
         setNewImageCaptions={setImageCaptions}
-        tempImageUrl="https://example.com/test.png"
-        setTempImageUrl={setTempUrl}
-        tempImageCaption="Snapshot Caption"
-        setTempImageCaption={setTempCaption}
         newContent=""
         setNewContent={vi.fn()}
       />
     );
 
-    // Enter press on image url triggers adding image
-    const imageUrlInput = screen.getByLabelText(/image url/i);
-    fireEvent.keyDown(imageUrlInput, { key: 'Enter' });
-    expect(setImageUrls).toHaveBeenCalled();
-    expect(setImageCaptions).toHaveBeenCalled();
+    // Get upload button
+    const uploadBtn = screen.getByRole('button', { name: /upload photo/i });
+    expect(uploadBtn).toBeInTheDocument();
 
-    // Reset mocks
-    setImageUrls.mockClear();
-    setImageCaptions.mockClear();
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['dummy content'], 'test-image.png', { type: 'image/png' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
 
-    // Enter press on image caption triggers adding image
-    const imageCaptionInput = screen.getByLabelText(/caption/i);
-    fireEvent.keyDown(imageCaptionInput, { key: 'Enter' });
-    expect(setImageUrls).toHaveBeenCalled();
-    expect(setImageCaptions).toHaveBeenCalled();
-
-    // Add button click
-    setImageUrls.mockClear();
-    setImageCaptions.mockClear();
-    const addBtn = screen.getByRole('button', { name: /add polaroid/i });
-    fireEvent.click(addBtn);
     expect(setImageUrls).toHaveBeenCalled();
     expect(setImageCaptions).toHaveBeenCalled();
 
@@ -188,20 +157,16 @@ describe('AddNoteModal Component', () => {
         setNewCategory={vi.fn()}
         newTagsString=""
         setNewTagsString={vi.fn()}
-        newImageUrls={['https://example.com/active.png']}
+        newImageUrls={['blob:url']}
         setNewImageUrls={setImageUrls}
-        newImageCaptions={['Active Caption']}
+        newImageCaptions={['test-image']}
         setNewImageCaptions={setImageCaptions}
-        tempImageUrl=""
-        setTempImageUrl={vi.fn()}
-        tempImageCaption=""
-        setTempImageCaption={vi.fn()}
         newContent=""
         setNewContent={vi.fn()}
       />
     );
 
-    expect(screen.getByText('Active Caption')).toBeInTheDocument();
+    expect(screen.getByText('test-image')).toBeInTheDocument();
 
     // Delete polaroid button click
     const deleteBtn = screen.getByTitle('Delete Image');

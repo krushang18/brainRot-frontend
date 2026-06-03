@@ -29,10 +29,6 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({
   setNewImageCaptions,
   newImageFiles,
   setNewImageFiles,
-  tempImageUrl,
-  setTempImageUrl,
-  tempImageCaption,
-  setTempImageCaption,
   newContent,
   setNewContent,
 }) => {
@@ -182,21 +178,6 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({
               {/* Input field to add a new URL (shown only if < 5 images exist) */}
               <PolaroidInputSection
                 imageUrls={newImageUrls}
-                tempImageUrl={tempImageUrl}
-                setTempImageUrl={setTempImageUrl}
-                tempImageCaption={tempImageCaption}
-                setTempImageCaption={setTempImageCaption}
-                onAddImage={() => {
-                  if (tempImageUrl.trim()) {
-                    setNewImageUrls([...newImageUrls, tempImageUrl.trim()]);
-                    setNewImageCaptions([...newImageCaptions, tempImageCaption.trim()]);
-                    if (setNewImageFiles && newImageFiles) {
-                      setNewImageFiles([...newImageFiles, null]);
-                    }
-                    setTempImageUrl('');
-                    setTempImageCaption('');
-                  }
-                }}
                 onAddFile={(file, caption) => {
                   setNewImageUrls([...newImageUrls, URL.createObjectURL(file)]);
                   setNewImageCaptions([...newImageCaptions, caption]);

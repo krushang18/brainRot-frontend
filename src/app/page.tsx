@@ -51,8 +51,6 @@ export default function Home() {
   const [newImageUrls, setNewImageUrls] = useState<string[]>([]);
   const [newImageCaptions, setNewImageCaptions] = useState<string[]>([]);
   const [newImageFiles, setNewImageFiles] = useState<(File | null)[]>([]);
-  const [tempImageUrl, setTempImageUrl] = useState('');
-  const [tempImageCaption, setTempImageCaption] = useState('');
   const [newContent, setNewContent] = useState('');
   const [newTagsString, setNewTagsString] = useState('');
   const [filterCategories, setFilterCategories] = useState<string[]>(['all']);
@@ -147,8 +145,6 @@ export default function Home() {
       setNewImageCaptions([]);
     }
     setNewImageFiles([]);
-    setTempImageUrl('');
-    setTempImageCaption('');
 
     setNewContent(note.content);
     setNewTagsString(note.tags ? note.tags.join(', ') : '');
@@ -252,8 +248,6 @@ export default function Home() {
       setNewImageUrls([]);
       setNewImageFiles([]);
       setNewImageCaptions([]);
-      setTempImageUrl('');
-      setTempImageCaption('');
       setNewContent('');
       setNewTagsString('');
       setNewCategory('yaps');
@@ -542,7 +536,6 @@ export default function Home() {
             setNewTitle('');
             setNewCategory('yaps');
             setNewImageUrls([]);
-            setTempImageUrl('');
             setNewContent('');
             setNewTagsString('');
             setNoteError('');
@@ -597,10 +590,6 @@ export default function Home() {
         setNewImageCaptions={setNewImageCaptions}
         newImageFiles={newImageFiles}
         setNewImageFiles={setNewImageFiles}
-        tempImageUrl={tempImageUrl}
-        setTempImageUrl={setTempImageUrl}
-        tempImageCaption={tempImageCaption}
-        setTempImageCaption={setTempImageCaption}
         newContent={newContent}
         setNewContent={setNewContent}
       />
@@ -629,10 +618,6 @@ export default function Home() {
         setNewImageCaptions={setNewImageCaptions}
         newImageFiles={newImageFiles}
         setNewImageFiles={setNewImageFiles}
-        tempImageUrl={tempImageUrl}
-        setTempImageUrl={setTempImageUrl}
-        tempImageCaption={tempImageCaption}
-        setTempImageCaption={setTempImageCaption}
         newContent={newContent}
         setNewContent={setNewContent}
         currentImageIndex={currentImageIndex}

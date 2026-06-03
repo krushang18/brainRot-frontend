@@ -340,7 +340,7 @@ describe('Home Page (Notes Dashboard)', () => {
     expect(await screen.findByText(/Content cannot be empty!/i)).toBeInTheDocument();
   });
 
-  it('handles note modal cancellation and image URL input', async () => {
+  it('handles note modal cancellation and image file upload reset', async () => {
     render(<Home />);
 
     await screen.findByText('Project Ideas for 2024');
@@ -348,9 +348,15 @@ describe('Home Page (Notes Dashboard)', () => {
     // Test cancellation via "Cancel" button
     const openModalBtn1 = screen.getByRole('button', { name: /\+ New Note/i });
     fireEvent.click(openModalBtn1);
-    const imageInput = screen.getByLabelText(/image url/i);
-    fireEvent.change(imageInput, { target: { value: 'https://example.com/test.png' } });
-    expect(imageInput).toHaveValue('https://example.com/test.png');
+
+    // Get upload button
+    const uploadBtn = screen.getByRole('button', { name: /upload photo/i });
+    expect(uploadBtn).toBeInTheDocument();
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['dummy content'], 'test-image.png', { type: 'image/png' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
     const cancelBtn = screen.getByRole('button', { name: /cancel/i });
     fireEvent.click(cancelBtn);
     expect(screen.queryByLabelText(/title/i)).not.toBeInTheDocument();

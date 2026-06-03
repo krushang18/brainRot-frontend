@@ -135,39 +135,26 @@ export const PolaroidGrid: React.FC<PolaroidGridProps> = ({
 
 interface PolaroidInputSectionProps {
   imageUrls: string[];
-  tempImageUrl: string;
-  setTempImageUrl: (val: string) => void;
-  tempImageCaption: string;
-  setTempImageCaption: (val: string) => void;
-  onAddImage: () => void;
+  tempImageUrl?: string;
+  setTempImageUrl?: (val: string) => void;
+  tempImageCaption?: string;
+  setTempImageCaption?: (val: string) => void;
+  onAddImage?: () => void;
   onAddFile?: (file: File, caption: string) => void;
 }
 
 export const PolaroidInputSection: React.FC<PolaroidInputSectionProps> = ({
   imageUrls,
-  tempImageUrl,
-  setTempImageUrl,
-  tempImageCaption,
-  setTempImageCaption,
-  onAddImage,
   onAddFile,
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   if (imageUrls.length >= 5) return null;
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      onAddImage();
-    }
-  };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && onAddFile) {
-      onAddFile(file, tempImageCaption.trim() || file.name.split('.')[0]);
-      setTempImageCaption('');
+      onAddFile(file, file.name.split('.')[0]);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -175,70 +162,23 @@ export const PolaroidInputSection: React.FC<PolaroidInputSectionProps> = ({
   };
 
   return (
-    <div className="mt-2 space-y-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="space-y-1">
-          <label
-            htmlFor="polaroid-image-url"
-            className="text-gunmetal/70 ml-1 font-mono text-[10px] font-bold uppercase select-none"
-          >
-            Image URL
-          </label>
-          <Input
-            id="polaroid-image-url"
-            type="text"
-            value={tempImageUrl}
-            onChange={(e) => setTempImageUrl(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Paste a photo URL..."
-            className="w-full"
-            size="md"
-          />
-        </div>
-        <div className="space-y-1">
-          <label
-            htmlFor="polaroid-image-caption"
-            className="text-gunmetal/70 ml-1 font-mono text-[10px] font-bold uppercase select-none"
-          >
-            Caption (Optional)
-          </label>
-          <Input
-            id="polaroid-image-caption"
-            type="text"
-            value={tempImageCaption}
-            onChange={(e) => setTempImageCaption(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Add caption..."
-            className="w-full"
-            size="md"
-          />
-        </div>
-      </div>
-      <div className="flex justify-end gap-2">
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          accept="image/*"
-          className="hidden"
-        />
-        {onAddFile && (
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="border-granite text-granite flex cursor-pointer items-center justify-center rounded-lg border bg-white px-4 py-2 font-mono text-xs font-bold tracking-wider uppercase shadow transition-all select-none hover:bg-slate-50 active:scale-95"
-          >
-            Upload Photo
-          </button>
-        )}
+    <div className="mt-2 flex justify-center">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        className="hidden"
+      />
+      {onAddFile && (
         <button
           type="button"
-          onClick={onAddImage}
-          className="bg-granite flex cursor-pointer items-center justify-center rounded-lg border border-black/25 px-5 py-2 font-mono text-xs font-bold tracking-wider text-white uppercase shadow transition-all select-none hover:bg-slate-800 active:scale-95"
+          onClick={() => fileInputRef.current?.click()}
+          className="border-granite text-granite flex cursor-pointer items-center justify-center rounded-lg border bg-white px-5 py-2.5 font-mono text-xs font-bold tracking-wider uppercase shadow transition-all select-none hover:bg-slate-50 active:scale-95"
         >
-          Add Polaroid
+          Upload Photo
         </button>
-      </div>
+      )}
     </div>
   );
 };

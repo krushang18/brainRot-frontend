@@ -36,10 +36,6 @@ describe('DetailModal Component', () => {
         setNewImageUrls={vi.fn()}
         newImageCaptions={[]}
         setNewImageCaptions={vi.fn()}
-        tempImageUrl=""
-        setTempImageUrl={vi.fn()}
-        tempImageCaption=""
-        setTempImageCaption={vi.fn()}
         newContent=""
         setNewContent={vi.fn()}
         currentImageIndex={0}
@@ -79,10 +75,6 @@ describe('DetailModal Component', () => {
         setNewImageUrls={vi.fn()}
         newImageCaptions={[]}
         setNewImageCaptions={vi.fn()}
-        tempImageUrl=""
-        setTempImageUrl={vi.fn()}
-        tempImageCaption=""
-        setTempImageCaption={vi.fn()}
         newContent=""
         setNewContent={vi.fn()}
         currentImageIndex={0}
@@ -147,10 +139,6 @@ describe('DetailModal Component', () => {
         setNewImageUrls={vi.fn()}
         newImageCaptions={['Wizard Barista']}
         setNewImageCaptions={vi.fn()}
-        tempImageUrl=""
-        setTempImageUrl={vi.fn()}
-        tempImageCaption=""
-        setTempImageCaption={vi.fn()}
         newContent="Barista looked like a wizard today."
         setNewContent={setContent}
         currentImageIndex={0}
@@ -202,10 +190,6 @@ describe('DetailModal Component', () => {
         setNewImageUrls={vi.fn()}
         newImageCaptions={[]}
         setNewImageCaptions={vi.fn()}
-        tempImageUrl=""
-        setTempImageUrl={vi.fn()}
-        tempImageCaption=""
-        setTempImageCaption={vi.fn()}
         newContent=""
         setNewContent={vi.fn()}
         currentImageIndex={0}
@@ -228,8 +212,6 @@ describe('DetailModal Component', () => {
     const setCats = vi.fn();
     const setUrls = vi.fn();
     const setCaptions = vi.fn();
-    const setTempUrl = vi.fn();
-    const setTempCaption = vi.fn();
 
     render(
       <DetailModal
@@ -250,10 +232,6 @@ describe('DetailModal Component', () => {
         setNewImageUrls={setUrls}
         newImageCaptions={[]}
         setNewImageCaptions={setCaptions}
-        tempImageUrl="https://new-url.png"
-        setTempImageUrl={setTempUrl}
-        tempImageCaption="New Snapshot"
-        setTempImageCaption={setTempCaption}
         newContent=""
         setNewContent={vi.fn()}
         currentImageIndex={0}
@@ -271,67 +249,15 @@ describe('DetailModal Component', () => {
     fireEvent.click(geniusBtn);
     expect(setCats).toHaveBeenCalledWith('genius');
 
-    // Add Image via button click
-    const addImgBtn = screen.getByRole('button', { name: /Add Polaroid/i });
-    fireEvent.click(addImgBtn);
+    // Add Image via file upload
+    const uploadBtn = screen.getByRole('button', { name: /upload photo/i });
+    expect(uploadBtn).toBeInTheDocument();
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['dummy content'], 'test-image.png', { type: 'image/png' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
     expect(setUrls).toHaveBeenCalled();
     expect(setCaptions).toHaveBeenCalled();
-    expect(setTempUrl).toHaveBeenCalledWith('');
-    expect(setTempCaption).toHaveBeenCalledWith('');
-  });
-
-  it('supports keydown events on image url and caption input fields', () => {
-    const setUrls = vi.fn();
-    const setCaptions = vi.fn();
-    const setTempUrl = vi.fn();
-    const setTempCaption = vi.fn();
-
-    render(
-      <DetailModal
-        isOpen={true}
-        selectedNote={mockNote}
-        onClose={vi.fn()}
-        isFlipped={true}
-        setIsFlipped={vi.fn()}
-        noteError=""
-        setNoteError={vi.fn()}
-        newTitle="Cafe sketches"
-        setNewTitle={vi.fn()}
-        newCategory="yaps"
-        setNewCategory={vi.fn()}
-        newTagsString=""
-        setNewTagsString={vi.fn()}
-        newImageUrls={[]}
-        setNewImageUrls={setUrls}
-        newImageCaptions={[]}
-        setNewImageCaptions={setCaptions}
-        tempImageUrl="https://new-url.png"
-        setTempImageUrl={setTempUrl}
-        tempImageCaption="New Snapshot"
-        setTempImageCaption={setTempCaption}
-        newContent=""
-        setNewContent={vi.fn()}
-        currentImageIndex={0}
-        setCurrentImageIndex={vi.fn()}
-        setPreviewImageUrl={vi.fn()}
-        onToggleFavorite={vi.fn()}
-        onDeleteNote={vi.fn()}
-        onSaveRevision={vi.fn()}
-        getFormattedDate={() => 'Oct 22, 2023'}
-      />
-    );
-
-    // Enter Keydown on Image URL input
-    const urlInput = screen.getByLabelText(/image url/i);
-    fireEvent.keyDown(urlInput, { key: 'Enter', code: 'Enter' });
-    expect(setUrls).toHaveBeenCalled();
-    expect(setCaptions).toHaveBeenCalled();
-    expect(setTempUrl).toHaveBeenCalledWith('');
-    expect(setTempCaption).toHaveBeenCalledWith('');
-
-    // Enter Keydown on Image Caption input
-    const captionInput = screen.getByLabelText(/caption \(optional\)/i);
-    fireEvent.keyDown(captionInput, { key: 'Enter', code: 'Enter' });
-    expect(setUrls).toHaveBeenCalled();
   });
 });

@@ -45,10 +45,6 @@ export interface SharedNoteFormProps {
   setNewImageCaptions: React.Dispatch<React.SetStateAction<string[]>>;
   newImageFiles?: (File | null)[];
   setNewImageFiles?: React.Dispatch<React.SetStateAction<(File | null)[]>>;
-  tempImageUrl: string;
-  setTempImageUrl: (val: string) => void;
-  tempImageCaption: string;
-  setTempImageCaption: (val: string) => void;
   newContent: string;
   setNewContent: (val: string) => void;
 }
