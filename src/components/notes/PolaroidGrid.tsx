@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Input } from 'sketchbook-ui';
 
 interface PolaroidGridProps {
   imageUrls: string[];
@@ -135,11 +134,6 @@ export const PolaroidGrid: React.FC<PolaroidGridProps> = ({
 
 interface PolaroidInputSectionProps {
   imageUrls: string[];
-  tempImageUrl?: string;
-  setTempImageUrl?: (val: string) => void;
-  tempImageCaption?: string;
-  setTempImageCaption?: (val: string) => void;
-  onAddImage?: () => void;
   onAddFile?: (file: File, caption: string) => void;
 }
 
